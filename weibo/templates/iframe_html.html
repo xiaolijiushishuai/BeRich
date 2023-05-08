@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>页面布局示例</title>
+    <meta charset="utf-8">
+    <style>
+      #sidebar {
+        float: left;
+        width: 20%;
+        height: 100vh;
+        background-color: #f2f2f2;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      #sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      #sidebar li {
+        margin-bottom: 10px;
+        background-color: #fff;
+        border-radius: 5px;
+        padding: 10px;
+        transition: all 0.3s ease-in-out;
+      }
+      #sidebar li:hover {
+        background-color: #f2f2f2;
+        transform: scale(1.05);
+      }
+      #sidebar li a {
+        text-decoration: none;
+        color: #333;
+      }
+      #main {
+        float: left;
+        width: 80%;
+        height: 100vh;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="sidebar">
+      <ul>
+        <li onclick="loadPage('./add_account.html')"><a href="#" onclick="loadPage('./add_account.html')">添加账号</a></li>
+        <li onclick="loadPage('./manage_account.html')"><a href="#" onclick="loadPage('./manage_account.html')">账号管理</a></li>
+        <li onclick="loadPage('./add_essay.html')"><a href="#" onclick="loadPage('./add_essay.html')">添加文章</a></li>
+        <li onclick="loadPage('./manage_essay.html')"><a href="#" onclick="loadPage('./manage_essay.html')">文章管理</a></li>
+<!--        <li onclick="loadPage('./add_remark.templates')"><a href="#" onclick="loadPage('./add_remark.templates')">添加评论</a></li>-->
+        <li onclick="loadPage('./add_task_essay.html')"><a href="#" onclick="loadPage('./add_task_essay.html')">添加任务</a></li>
+        <li onclick="loadPage('./fb_log.html')"><a href="#" onclick="loadPage('./fb_log.html')">发布日志</a></li>
+      </ul>
+    </div>
+    <iframe id="main"></iframe>
+    <script>
+      function loadPage(url) {
+        document.getElementById('main').src = url;
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>发布日志</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+
+        table th,
+        table td {
+            padding: 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        table th {
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        table td:last-child {
+            text-align: center;
+        }
+
+        table td:last-child button {
+            padding: 6px 10px;
+            border: none;
+            background-color: #ff4d4f;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        table td:last-child button:hover {
+            background-color: #ff7875;
+        }
+
+        table td:last-child button.edit {
+            background-color: #1890ff;
+        }
+
+        table td:last-child button.edit:hover {
+            background-color: #40a9ff;
+        }
+
+        table input[type="text"],
+        table select {
+            padding: 6px 10px;
+            border: none;
+            background-color: #f5f5f5;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+
+        table select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4' viewBox='0 0 8 4'%3E%3Cpath fill='%23333333' d='M0 0h8L4 4z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 8px 4px;
+            padding-right: 30px;
+        }
+
+        table select:focus {
+            outline: none;
+        }
+
+        table .edit-input {
+            display: none;
+            margin: -6px -10px;
+            padding: 6px 10px;
+            border: none;
+            background-color: #fff;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+
+        table .edit-input:focus {
+            outline: none;
+        }
+
+    </style>
+</head>
+<body>
+<!--<table>-->
+<!--  <thead>-->
+<!--    <tr>-->
+<!--      <th>账号名称</th>-->
+<!--      <th>账号类型</th>-->
+<!--      <th>操作</th>-->
+<!--    </tr>-->
+<!--  </thead>-->
+<!--  <tbody id="accountList">-->
+<!--    &lt;!&ndash; 这里是用 JS 生成的账号列表 &ndash;&gt;-->
+<!--  </tbody>  -->
+
+<!--</table>-->
+<table>
+    <thead>
+    <tr>
+        <th>发布账号</th>
+        <th>发布时间</th>
+        <th>发布的文章</th>
+        <th>发布状态</th>
+        <th>任务名称</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for accounts in joblist %}
+    <tr>
+        {% for account in accounts %}
+        {% if account == 'P' %}
+            <td contenteditable="false">待处理</td>
+        {% elif account == 'S' %}
+            <td contenteditable="false">处理成功</td>
+        {% else %}
+            <td contenteditable="false">{{account}}</td>
+        {% endif %}
+        {% endfor %}
+    </tr><br>
+    {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const editBtn = row.querySelector('.btn-edit');
+        const deleteBtn = row.querySelector('.btn-delete');
+
+        editBtn.addEventListener('click', () => {
+            var i = 0;
+            const edit_lsit = []
+            cells.forEach(cell => {
+              edit_lsit[i] = cell.textContent;
+              i += 1;
+            });
+            console.log(edit_lsit)
+        });
+
+        deleteBtn.addEventListener('click', () => {
+            row.remove();
+        });
+    });
+</script>
+
+</body>
+</html>

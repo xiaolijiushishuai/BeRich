@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>添加发布任务</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        form {
+            margin: 20px auto;
+            width: 400px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px #ddd;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 95%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        button {
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+<h1>添加任务</h1>
+<form>
+    <label for="select">请选择账号：</label>
+    <select id="select" multiple>
+        {% for accounts in account_list %}
+        {% for accountsname in accounts %}
+        <option value="{{accountsname}}">{{accountsname}}</option>
+        {% endfor %}
+        {% endfor %}
+    </select>
+    <br><br>
+    <label for="selected">已选择：</label>
+    <ul id="selected"></ul>
+    <label for="select">请选择文章：</label>
+    <select id="select_essay" multiple>
+        {% for articles in article_list %}
+        {% for article in articles %}
+        <option value="{{article}}">{{article}}</option>
+        {% endfor %}
+        {% endfor %}
+    </select>
+    <br><br>
+    <label for="selected">已选择：</label>
+    <ul id="selected_essay"></ul>
+    <label for="task_name">任务名称:</label>
+    <input type="text" id="task_name" name="task_name" required><br>
+    <label for="task_name">执行开始时间</label>
+    <input type="date" id="begin_date">
+    <input type="time" id="begin_time">
+    <br><br>
+    <label for="task_name">执行结束时间</label>
+    <input type="date" id="end_date">
+    <input type="time" id="end_time">
+    <button type="submit" id="add-btn">添加任务</button>
+</form>
+
+<script>
+    const select = document.getElementById('select');
+    const selected = document.getElementById('selected');
+
+    // 监听选择框的change事件
+    select.addEventListener('change', function () {
+        // 获取当前选择的选项
+        const options = select.selectedOptions;
+
+        // 遍历选项，将选中的选项加入已选择列表中
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+
+            // 判断是否已经存在于已选择列表中
+            if (document.querySelector(`#selected [data-value="${option.value}"]`)) {
+                continue;
+            }
+
+            // 创建列表项并添加到已选择列表中
+            const item = document.createElement('li');
+            item.textContent = option.textContent;
+            item.setAttribute('data-value', option.value);
+
+            // 创建删除按钮并添加到列表项中
+            const button = document.createElement('button');
+            button.textContent = '删除';
+            button.addEventListener('click', function () {
+                item.remove();
+            });
+            item.appendChild(button);
+
+            selected.appendChild(item);
+        }
+    });
+
+
+    const select_essay = document.getElementById('select_essay');
+    const selected_essay = document.getElementById('selected_essay');
+
+    // 监听选择框的change事件
+    select_essay.addEventListener('change', function () {
+        // 获取当前选择的选项
+        const options = select_essay.selectedOptions;
+
+        // 遍历选项，将选中的选项加入已选择列表中
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+
+            // 判断是否已经存在于已选择列表中
+            if (document.querySelector(`#selected_essay [data-value="${option.value}"]`)) {
+                continue;
+            }
+
+            // 创建列表项并添加到已选择列表中
+            const item = document.createElement('li');
+            item.textContent = option.textContent;
+            item.setAttribute('data-value', option.value);
+
+            // 创建删除按钮并添加到列表项中
+            const button = document.createElement('button');
+            button.textContent = '删除';
+            button.addEventListener('click', function () {
+                item.remove();
+            });
+            item.appendChild(button);
+
+            selected_essay.appendChild(item);
+        }
+    });
+
+    const form = document.querySelector('form');
+    const addBtn = document.querySelector('#add-btn');
+    let account_type = ""
+    addBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        const task_name = document.querySelector('#task_name').value;
+        // const excuteTime = document.querySelector('#excuteTime').value;
+        const begin_date = document.querySelector('#begin_date').value;
+        const begin_time = document.querySelector('#begin_time').value;
+        const end_date = document.querySelector('#end_date').value;
+        const end_time = document.querySelector('#end_time').value;
+        const execute_begin_time = begin_date + " " + begin_time
+        const execute_end_time = end_date + " " + end_time
+        console.log(execute_begin_time, execute_end_time)
+
+
+        // 在这里，你可以将用户名和密码发送到服务器，来创建新的账号。
+        // 我们这里只是将其打印到控制台上，以作演示。
+        const selectedValues = [];
+        // 遍历已选择列表中的每一个列表项
+        document.querySelectorAll('#selected li').forEach(function (item) {
+            // 将每个列表项的data-value属性的值加入已选择值的数组中
+            selectedValues.push(item.getAttribute('data-value'));
+        });
+        const selectedValues_essay = [];
+        // 遍历已选择列表中的每一个列表项
+        document.querySelectorAll('#selected_essay li').forEach(function (item) {
+            // 将每个列表项的data-value属性的值加入已选择值的数组中
+            selectedValues_essay.push(item.getAttribute('data-value'));
+        });
+        console.log(selectedValues_essay);
+        console.log(`任务名称：${task_name}, 账号列表：${selectedValues},文章列表：${selectedValues_essay}`);
+        if(selectedValues_essay.length<selectedValues.length){
+            alert("文章数必须大于账号数")
+            return
+        }
+        if(execute_begin_time>execute_end_time){
+            alert("开始时间不能大于结束时间")
+            return
+        }
+        const data = {
+            task_name: task_name,
+            selectedValues: selectedValues,
+            selectedValues_essay: selectedValues_essay,
+            execute_begin_time:execute_begin_time,
+            execute_end_time:execute_end_time,
+        };
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', "addtaskessay");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // const response = JSON.parse(xhr.responseText);
+                // 处理响应数据
+
+                console.log(xhr.responseText);
+                window.location.reload();
+                //document.getElementById('main').contentWindow.location.reload(true);
+
+                alert(xhr.responseText)
+            }
+        };
+        xhr.send(JSON.stringify(data));
+
+    });
+</script>
+</body>
+</html>

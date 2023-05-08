@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+
+        table th,
+        table td {
+            padding: 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        table th {
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        table td:last-child {
+            text-align: center;
+        }
+
+        table td:last-child button {
+            padding: 6px 10px;
+            border: none;
+            background-color: #ff4d4f;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        table td:last-child button:hover {
+            background-color: #ff7875;
+        }
+
+        table td:last-child button.edit {
+            background-color: #1890ff;
+        }
+
+        table td:last-child button.edit:hover {
+            background-color: #40a9ff;
+        }
+
+        table input[type="text"],
+        table select {
+            padding: 6px 10px;
+            border: none;
+            background-color: #f5f5f5;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+
+        table select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4' viewBox='0 0 8 4'%3E%3Cpath fill='%23333333' d='M0 0h8L4 4z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 8px 4px;
+            padding-right: 30px;
+        }
+
+        table select:focus {
+            outline: none;
+        }
+
+        table .edit-input {
+            display: none;
+            margin: -6px -10px;
+            padding: 6px 10px;
+            border: none;
+            background-color: #fff;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+
+        table .edit-input:focus {
+            outline: none;
+        }
+
+        form {
+            margin: 20px auto;
+            width: 400px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px #ddd;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 95%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #updateDicid {
+            margin: 20px auto;
+            width: 430px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px #ddd;
+        }
+
+        .backdrop {
+            width: 100%;
+            height: 100%;
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgba(8, 7, 7, 0.6);
+            z-index: 100;
+            transition: all .2s ease;
+            backdrop-filter: saturate(180%) blur(1px);
+        }
+    </style>
+    <script src="https://labfile.oss.aliyuncs.com/courses/3774/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<!--<table>-->
+<!--  <thead>-->
+<!--    <tr>-->
+<!--      <th>账号名称</th>-->
+<!--      <th>账号类型</th>-->
+<!--      <th>操作</th>-->
+<!--    </tr>-->
+<!--  </thead>-->
+<!--  <tbody id="accountList">-->
+<!--    &lt;!&ndash; 这里是用 JS 生成的账号列表 &ndash;&gt;-->
+<!--  </tbody>  -->
+
+<!--</table>-->
+<table>
+    <thead>
+    <tr>
+        <th>文章标题</th>
+        <th>文章内容</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for essay in account_essay_list %}
+    <tr>
+        {% for essay_mssage in essay %}
+        <td contenteditable="true">{{essay_mssage}}</td>
+        {% endfor %}
+        <td>
+            <button class="btn-edit">修改</button>
+            <button class="btn-delete">删除</button>
+        </td>
+    </tr>
+    {% endfor %}
+
+    </tbody>
+</table>
+
+<form class="backdrop" style="display: none" id="updateessay">
+    <div id="updateDicid">
+        <label for="account-type">文章类型:</label>
+        <select id="account-type" name="account-type" onchange="onAccountTypeChange()">
+            <option value="">请选择文章类型</option>
+            {% for essay_type in article_type_list %}
+            <option name="{{essay_type}}">{{essay_type}}</option>
+            {% endfor %}
+            <option value="other">自定义</option>
+        </select><br>
+        <div id="other-account-type" style="display: none;">
+            <label for="other-type">自定义:</label>
+            <input type="text" id="other-type" name="other-type">
+        </div>
+        <label for="tt">标题:</label>
+        <input type="text" id="tt" name="tt" readonly><br>
+        <label for="essay">内容:</label>
+        <textarea type="text" id="essay" name="username" required style="width: 380px;height: 280px"></textarea><br>
+
+        <button type="submit" id="update-btn" class="modal">修改文章</button>
+        <button type="submit" id="cancle-btn" class="modal">取消</button>
+    </div>
+</form>
+
+<script>
+    const accountTypeSelect = document.querySelector('#account-type');
+    const otherAccountType = document.querySelector('#other-account-type');
+    let selectedValue = ""
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const editBtn = row.querySelector('.btn-edit');
+        const deleteBtn = row.querySelector('.btn-delete');
+
+        editBtn.addEventListener('click', () => {
+            var i = 0;
+            const edit_lsit = []
+            cells.forEach(cell => {
+                edit_lsit[i] = cell.textContent;
+                i += 1;
+            });
+            title = edit_lsit[0]
+            content = edit_lsit[1]
+
+            document.getElementById('tt').value = title
+            document.getElementById('essay').value = content
+
+            tablef = document.getElementById("updateessay")
+            tablef.focus();
+
+            var ele = document.getElementsByClassName("modal")[0];
+            ele.style.visibility = `visible`;
+            ele.style.opacity = `1`;
+            // show backdrop effect
+            var backdrop = document.getElementsByClassName("backdrop")[0];
+            backdrop.style.opacity = `1`;
+            backdrop.style.visibility = `visible`;
+            //update account
+            tablef.style.display = "block"
+            console.log(edit_lsit)
+        });
+
+        deleteBtn.addEventListener('click', () => {
+            var i = 0;
+            const edit_lsit = []
+            cells.forEach(cell => {
+                edit_lsit[i] = cell.textContent;
+                i += 1;
+            });
+            title = edit_lsit[0]
+
+            const data = {
+                article_title: title,
+            };
+            const url = '/data';
+            const xhr = new XMLHttpRequest();
+            // xhr.open('POST', window.location.hostname+"/add_account_message");
+            xhr.open('POST', "delete_essay_message");
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // const response = JSON.parse(xhr.responseText);
+                    // 处理响应数据
+                    console.log(xhr.responseText);
+                    //document.getElementById('main').contentWindow.location.reload(true);
+
+                    alert(xhr.responseText)
+                }
+            };
+            xhr.send(JSON.stringify(data));
+            row.remove();
+        });
+    });
+
+    function onAccountTypeChange() {
+        const selectedOption = accountTypeSelect.options[accountTypeSelect.selectedIndex];
+        selectedValue = selectedOption.value;
+        const selectedText = selectedOption.text;
+
+        if (selectedValue === 'other') {
+            otherAccountType.style.display = 'block';
+        } else {
+            otherAccountType.style.display = 'none';
+        }
+
+        console.log(`选择了 ${selectedText}，值为 ${selectedValue}`);
+    }
+
+    document.getElementById('update-btn').addEventListener("click", function (event) {
+
+        const title = document.getElementById('tt').value
+        const essay = document.getElementById('essay').value
+
+        if (selectedValue === 'other') {
+            essay_type = document.querySelector('#other-type').value;
+        } else {
+            essay_type = selectedValue;
+        }
+        if (essay_type = "") {
+            alert("请选择文章类型")
+            return false
+        }
+        if (title == "") {
+            alert("请输入文章标题")
+            return false;
+        }
+        if (essay == "") {
+            alert("请输入文章")
+            return false;
+        }
+
+        const data = {
+            essay_type: selectedValue,
+            title: title,
+            content: essay
+        };
+        const xhr = new XMLHttpRequest();
+        // xhr.open('POST', window.location.hostname+"/add_account_message");
+        xhr.open('POST', "update_essay_message");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                alert(xhr.responseText)
+            }
+        };
+        xhr.send(JSON.stringify(data));
+
+        window.location.reload();
+        event.target.parentNode.style.visibility = `hidden`;
+        event.target.parentNode.style.opacity = `0`;
+        // close backdrop effect
+        var backdrop = document.getElementsByClassName("backdrop")[0];
+        backdrop.style.opacity = `0`;
+        backdrop.style.visibility = `hidden`;
+    })
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>添加代理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        form {
+            margin: 20px auto;
+            width: 400px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px #ddd;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 95%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        button {
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+<h1>添加代理</h1>
+<form>
+    <label for="select">账号类型：</label>
+    <br><br>
+    <select id="select_type" multiple>
+        {% for account_type in account_type_list %}
+        <option name="{{account_type}}">{{account_type}}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+    <label for="account_name">账号名称:</label>
+    <input type="text" id="account_name" name="account_name" required><br>
+    <label for="select">请选择账号：</label>
+    <br><br>
+    <select id="select" multiple>
+        {% for account_type in account_list %}
+        <option name="{{account}}">{{account}}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+    <label for="selected">已选择：</label>
+    <ul id="selected"></ul>
+    <label for="ip">ip:</label>
+    <input type="text" id="ip" name="username" required><br>
+
+    <label for="port">port:</label>
+    <input type="text" id="port" name="password" required><br>
+
+    <label for="account">account:</label>
+    <input type="text" id="account" name="password" required><br>
+    <label for="password">password:</label>
+    <input type="text" id="password" name="password" required><br>
+
+    <button type="submit" id="add-btn">添加账号</button>
+</form>
+
+<script>
+    const select = document.getElementById('select');
+    const selected = document.getElementById('selected');
+
+    // 监听选择框的change事件
+    select.addEventListener('change', function () {
+        // 获取当前选择的选项
+        const options = select.selectedOptions;
+
+        alert(options.value)
+
+        // 遍历选项，将选中的选项加入已选择列表中
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+
+            // 判断是否已经存在于已选择列表中
+            if (document.querySelector(`#selected [data-value="${option.value}"]`)) {
+                continue;
+            }
+
+            // 创建列表项并添加到已选择列表中
+            const item = document.createElement('li');
+            item.textContent = option.textContent;
+            item.setAttribute('data-value', option.value);
+
+            // 创建删除按钮并添加到列表项中
+            const button = document.createElement('button');
+            button.textContent = '删除';
+            button.addEventListener('click', function () {
+                item.remove();
+            });
+            item.appendChild(button);
+
+            selected.appendChild(item);
+        }
+    });
+
+    const form = document.querySelector('form');
+    const addBtn = document.querySelector('#add-btn');
+    let account_type = ""
+    addBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        const ip = document.querySelector('#ip').value;
+        const port = document.querySelector('#port').value;
+        const account = document.querySelector('#account').value;
+        const password = document.querySelector('#password').value;
+
+        // 在这里，你可以将用户名和密码发送到服务器，来创建新的账号。
+        // 我们这里只是将其打印到控制台上，以作演示。
+        const selectedValues = [];
+        // 遍历已选择列表中的每一个列表项
+        document.querySelectorAll('#selected li').forEach(function (item) {
+            // 将每个列表项的data-value属性的值加入已选择值的数组中
+            selectedValues.push(item.getAttribute('data-value'));
+        });
+        console.log(selectedValues);
+        console.log(`ip：${ip}，port：${port}，account：${account}, password:${password}, 账号列表：${selectedValues}`);
+
+    });
+</script>
+</body>
+</html>

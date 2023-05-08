@@ -1,0 +1,67 @@
+html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>一体时间选择器</title>
+<style>
+#timeSelector {
+  width: 300px;
+}
+</style>
+</head>
+<body>
+<div id="timeSelector">
+<input type="text" id="timeInput">
+<button id="toggleBtn">∨</button>
+<div id="timeMenu" style="display:none">
+<div>年: <span id="year">2020</span></div>
+<div>月: <span id="month">10</span></div>
+<div>日: <span id="date">10</span></div>
+<div>时: <span id="hour">10</span></div>
+<div>分: <span id="minute">10</span></div>
+    <input type="date" id="time_date">
+    <input type="time" id="time_time" onclick="check()">
+</div>
+</div>
+
+<script>
+var timeInput = document.getElementById("timeInput");
+var toggleBtn = document.getElementById("toggleBtn");
+var timeMenu = document.getElementById("timeMenu");
+var spans = document.querySelectorAll("#timeMenu span");
+var arr = [2020, 10, 10, 10, 10]; //初始化时间
+
+timeInput.value = formatTime(arr); //设置初始值
+toggleBtn.addEventListener("click", function(){
+  timeMenu.style.display = timeMenu.style.display === "none" ? "block" : "none";
+});
+
+// 时间 formatting
+function formatTime(arr){
+  return arr[0] + "-" + pad(arr[1]) + "-" + pad(arr[2]) + " " + pad(arr[3]) + ":" + pad(arr[4]);
+}
+
+// 格式化时间为两位数
+function pad(n){
+  return n < 10 ? "0" + n : n;
+}
+
+// 点击时间选项进行选择
+for(let i=0; i<spans.length; i++){
+  spans[i].addEventListener("click",function(){
+    arr[i]++;
+    if(i==0 && arr[i] > 2020) arr[i] = 1950;  //年份范围1950-2020
+    else if(arr[i] > 59) arr[i] = 0;           //其他最高到59
+    timeInput.value = formatTime(arr);
+  });
+}
+function check(){
+
+        const time_date = document.querySelector('#time_date').value;
+        const time_time = document.querySelector('#time_time').value;
+        console.log(time_date+" "+time_time)
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+
+        .backdrop {
+            width: 100%;
+            height: 100%;
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgba(8, 7, 7, 0.6);
+            z-index: 100;
+            transition: all .2s ease;
+            backdrop-filter: saturate(180%) blur(1px);
+        }
+
+        table th,
+        table td {
+            padding: 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        table th {
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        table td:last-child {
+            text-align: center;
+        }
+
+        table td:last-child button {
+            padding: 6px 10px;
+            border: none;
+            background-color: #ff4d4f;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        table td:last-child button:hover {
+            background-color: #ff7875;
+        }
+
+        table td:last-child button.edit {
+            background-color: #1890ff;
+        }
+
+        table td:last-child button.edit:hover {
+            background-color: #40a9ff;
+        }
+
+        table input[type="text"],
+        table select {
+            padding: 6px 10px;
+            border: none;
+            background-color: #f5f5f5;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+
+        table select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4' viewBox='0 0 8 4'%3E%3Cpath fill='%23333333' d='M0 0h8L4 4z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 8px 4px;
+            padding-right: 30px;
+        }
+
+        table select:focus {
+            outline: none;
+        }
+
+        table .edit-input {
+            display: none;
+            margin: -6px -10px;
+            padding: 6px 10px;
+            border: none;
+            background-color: #fff;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+
+        table .edit-input:focus {
+            outline: none;
+        }
+
+
+        #adduse {
+            /*display: none;*/
+            width: 500px;
+            height: 300px;
+            border: 1px solid #c0c0c0;
+            background: #ffffff;
+            position: absolute;
+            left: 50%;
+            top: 20%;
+        }
+
+        #updateDicid {
+            margin: 20px auto;
+            width: 430px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px #ddd;
+        }
+
+        #addProxy {
+            margin: 20px auto;
+            width: 430px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px #ddd;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 95%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        #search {
+            width: 25%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+
+        button[type="button"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #msg {
+            padding: 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+    </style>
+    <script src="https://labfile.oss.aliyuncs.com/courses/3774/jquery-3.6.0.min.js"></script>
+    <!--    <script>-->
+    <!--        // function updateAccount(){-->
+    <!--        //     $.ajax("",{"account":""},function (){-->
+    <!--        //-->
+    <!--        //     })-->
+    <!--        // //    alert("xiu gai111")-->
+    <!--        // }-->
+    <!--    </script>-->
+</head>
+<body>
+<!--<table>-->
+<!--  <thead>-->
+<!--    <tr>-->
+<!--      <th>账号名称</th>-->
+<!--      <th>账号类型</th>-->
+<!--      <th>操作</th>-->
+<!--    </tr>-->
+<!--  </thead>-->
+<!--  <tbody id="accountList">-->
+<!--    &lt;!&ndash; 这里是用 JS 生成的账号列表 &ndash;&gt;-->
+<!--  </tbody>  -->
+
+<!--</table>-->
+<table>
+    <thead>
+    <tr>
+        <input id="search" value="根据账号名称搜索">
+        <input type="button" id="searchAcc" value="搜索">
+        <p id="msg">根据账号类型过滤</p>
+        <select id="account-type-search" name="account-type" onchange="onAccountTypeChangeForsearch()">
+            <option value="">请选择账号类型</option>
+            {% for account_type in account_type_list %}
+            <option name="{{account_type}}">{{account_type}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <th>账号名称</th>
+        <th>账号密码</th>
+        <th>账号类型</th>
+        <th>登录类型</th>
+        <th>是否需要登录</th>
+        <th>代理ip</th>
+        <th>代理port</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody id="tbodyacc">
+    {% for accounts in account_list %}
+    <tr>
+        {% for account_message in accounts %}
+        {% if account_message == '需要登录' %}
+        <td>
+            <button class="btn-login">登录</button>
+        </td>
+        {% elif account_message == '正常' %}
+        <td contenteditable="false">{{account_message}}
+            <button class="btn-login" style="display:none"></button>
+        </td>
+        {% else %}
+        <td contenteditable="false">{{account_message}}</td>
+        {% endif %}
+        {% endfor %}
+        <td>
+            <button class="btn-edit">修改账号</button>
+            <button class="btn-delete">删除账号</button>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+
+</table>
+<form id="adduse" style="display: none">
+    <p class="addusep">验证码登录</p>
+    <div class="">
+        <p>
+            验证码: <input type="text" placeholder="请输入验证码" id="sms_code"/>
+        </p>
+        <input type="button" value="确定" onclick="sms_login()" id="sms_login_button"/>
+    </div>
+
+</form>
+
+
+<form class="backdrop" style="display: none" id="updateActable">
+    <div id="updateDicid">
+        <label for="account-type">账号类型:</label>
+        <select id="account-type" name="account-type" onchange="onAccountTypeChange()">
+            <option value="">请选择账号类型</option>
+            {% for account_type in account_type_list %}
+            <option name="{{account_type}}">{{account_type}}</option>
+            {% endfor %}
+            <!--        <option value="">请选择账号类型</option>-->
+            <!--        <option value="email">大v账号</option>-->
+            <!--        <option value="username">普通账号</option>-->
+            <!--        <option value="phone">小账号</option>-->
+            <option value="other">自定义</option>
+
+        </select><br>
+        <div id="other-account-type" style="display: none;">
+            <label for="other-type">自定义:</label>
+            <input type="text" id="other-type" name="other-type">
+        </div>
+
+        <label for="username">账号:</label>
+        <input type="text" id="username" name="username" readonly><br>
+
+        <label for="password">密码:</label>
+        <input type="text" id="password" name="password" required><br>
+
+        <label for="ipaddress">ip:</label>
+        <input type="text" id="ipaddress" name="ipaddress"><br>
+
+        <label for="port">端口:</label>
+        <input type="text" id="port" name="port" required>
+        <br>
+
+        <label>
+            <input type="radio" name="options" value="密码">
+            密码
+        </label>
+
+        <label>
+            <input type="radio" name="options" value="验证码" checked>
+            验证码
+        </label>
+
+        <label>
+            <input type="radio" name="options" value="扫码">
+            扫码
+        </label>
+        <br>
+        <button type="button" id="updateAccountMessage" class="modal">提交</button>
+        <button type="button" id="cancel" class="modal">取消</button>
+    </div>
+</form>
+
+
+<script>
+    var rows = document.querySelectorAll('tbody tr');
+    let login_flag = false
+    let sms_flag = false
+    let login_account = ""
+    let accountList = '{{account_list}}'
+
+    const accountTypeSelect = document.querySelector('#account-type');
+    const otherAccountType = document.querySelector('#other-account-type');
+    let selectedValue = ""
+
+    function onAccountTypeChange() {
+        const selectedOption = accountTypeSelect.options[accountTypeSelect.selectedIndex];
+        selectedValue = selectedOption.value;
+        const selectedText = selectedOption.text;
+
+        if (selectedValue === 'other') {
+            otherAccountType.style.display = 'block';
+        } else {
+            otherAccountType.style.display = 'none';
+        }
+
+        console.log(`选择了 ${selectedText}，值为 ${selectedValue}`);
+    }
+
+    function onAccountTypeChangeForsearch() {
+        accountTypeSearchSelect = document.getElementById("account-type-search")
+        const selectedOption = accountTypeSearchSelect.options[accountTypeSearchSelect.selectedIndex];
+        selectedValue = selectedOption.value;
+        const selectedText = selectedOption.text;
+
+        console.log(`选择了 ${selectedText}，值为 ${selectedValue}`);
+        const data = {
+            account_type: selectedValue
+        };
+        // const url = '/sms_login';
+        const xhr = new XMLHttpRequest();
+        // xhr.open('POST', window.location.hostname+"/add_account_message");
+        xhr.open('POST', "searchByAccountType");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // const response = JSON.parse(xhr.responseText);
+                // 处理响应数据
+                console.log(xhr.responseText);
+                var resp = JSON.parse(xhr.responseText)
+
+                tbody = document.getElementById("tbodyacc")
+                tbody.innerHTML = "";
+                var chi = ""
+                for (let i = 0; i < resp.length; i++) {
+                    chi = chi + "<tr>"
+                    chi = chi + "<td>" + resp[i]["accountName"] + "</td>"
+                    chi = chi + "<td>" + resp[i]["password"] + "</td>"
+                    chi = chi + "<td>" + resp[i]["accountType"] + "</td>"
+                    chi = chi + "<td>" + resp[i]["loginType"] + "</td>"
+                    if (resp[i]["logingStatue"] == '需要登录') {
+                        chi = chi + "<td><button class='btn-login'>登录</button></td>"
+                    } else {
+                        chi = chi + "<td>" + resp[i]["logingStatue"] + "</td>"
+                    }
+                    chi = chi + "<td>" + resp[i]["proxyip"] + "</td>"
+                    chi = chi + "<td>" + resp[i]["proxyport"] + "</td>"
+
+                    chi = chi + "<td><button class='btn-edit'>修改账号</button>"
+                    chi = chi + "<button class='btn-delete'>删除账号</button></td>"
+                    chi = chi + "</tr>"
+                }
+                tbody.innerHTML = chi
+                loadsour();
+            }
+        };
+        xhr.send(JSON.stringify(data));
+    }
+
+    document.getElementById('searchAcc').addEventListener("click", function (event) {
+        searchInput = document.getElementById("search").value
+        const data = {
+            account_Name: searchInput
+        };
+        // const url = '/sms_login';
+        const xhr = new XMLHttpRequest();
+        // xhr.open('POST', window.location.hostname+"/add_account_message");
+        xhr.open('POST', "searchByAccountName");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // const response = JSON.parse(xhr.responseText);
+                // 处理响应数据
+                console.log(xhr.responseText);
+                var resp = JSON.parse(xhr.responseText)
+
+                tbody = document.getElementById("tbodyacc")
+                tbody.innerHTML = "";
+                var chi = ""
+                for (let i = 0; i < resp.length; i++) {
+                    chi = chi + "<tr>"
+                    chi = chi + "<td>" + resp[i]["accountName"] + "</td>"
+                    chi = chi + "<td>" + resp[i]["password"] + "</td>"
+                    chi = chi + "<td>" + resp[i]["accountType"] + "</td>"
+                    chi = chi + "<td>" + resp[i]["loginType"] + "</td>"
+                    if (resp[i]["logingStatue"] == '需要登录') {
+                        chi = chi + "<td><button class='btn-login'>登录</button></td>"
+                    } else {
+                        chi = chi + "<td>" + resp[i]["logingStatue"] + "</td>"
+                    }
+                    chi = chi + "<td>" + resp[i]["proxyip"] + "</td>"
+                    chi = chi + "<td>" + resp[i]["proxyport"] + "</td>"
+                    chi = chi + "<td><button class='btn-edit'>修改账号</button>"
+                    chi = chi + "<button class='btn-delete'>删除账号</button></td>"
+                    chi = chi + "</tr>"
+                }
+                tbody.innerHTML = chi
+                loadsour();
+            }
+        };
+        xhr.send(JSON.stringify(data));
+    })
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const editBtn = row.querySelector('.btn-edit');
+        const loginBtn = row.querySelector('.btn-login');
+        const deleteBtn = row.querySelector('.btn-delete');
+        // const addProxy = row.querySelector('.add-proxy');
+
+        editBtn.addEventListener('click', () => {
+            var i = 0;
+            const edit_lsit = []
+            cells.forEach(cell => {
+                edit_lsit[i] = cell.textContent;
+                i += 1;
+            });
+            console.log(edit_lsit)
+            tablef = document.getElementById("updateActable")
+
+            tablef.focus();
+            use = edit_lsit[0]
+            pass = edit_lsit[1]
+            ip = edit_lsit[5]
+            port = edit_lsit[6]
+            document.getElementById("username").value = use
+            document.getElementById("password").value = pass
+            document.getElementById("ipaddress").value = ip
+            document.getElementById("port").value = port
+
+            var ele = document.getElementsByClassName("modal")[0];
+            ele.style.visibility = `visible`;
+            ele.style.opacity = `1`;
+            // show backdrop effect
+            var backdrop = document.getElementsByClassName("backdrop")[0];
+            backdrop.style.opacity = `1`;
+            backdrop.style.visibility = `visible`;
+            //update account
+            tablef.style.display = "block"
+        });
+
+        loginBtn.addEventListener('click', () => {
+            if (login_flag) {
+                return
+            }
+            login_flag = true
+            console.log("点击了登录")
+            var i = 0;
+            const login_lsit = []
+            cells.forEach(cell => {
+                login_lsit[i] = cell.textContent;
+                i += 1;
+            });
+            console.log(login_lsit)
+            const data = {
+                username: login_lsit[0],
+                password: login_lsit[1],
+            };
+            // const url = '/sms_login_send';
+            const xhr = new XMLHttpRequest();
+            // xhr.open('POST', window.location.hostname+"/add_account_message");
+            xhr.open('POST', "sms_login_send");
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // const response = JSON.parse(xhr.responseText);
+                    // 处理响应数据
+                    console.log(xhr.responseText);
+
+                    alert(xhr.responseText)
+
+                }
+            };
+            xhr.send(JSON.stringify(data));
+            document.getElementById('adduse').style.display = "block"
+            login_flag = false
+            login_account = login_lsit[0]
+        });
+
+        deleteBtn.addEventListener('click', () => {
+            var i = 0;
+            const edit_lsit = []
+            cells.forEach(cell => {
+                edit_lsit[i] = cell.textContent;
+                i += 1;
+            });
+            use = edit_lsit[0]
+            const data = {
+                username: use
+            };
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', "delete_account_message");
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // const response = JSON.parse(xhr.responseText);
+                    // 处理响应数据
+                    console.log(xhr.responseText);
+
+                }
+            };
+            xhr.send(JSON.stringify(data));
+            row.remove();
+
+        });
+    });
+
+    function sms_login() {
+        if (sms_flag) {
+            return
+        }
+        sms_flag = true
+        const sms_code = document.getElementById('sms_code').value
+        console.log("验证码：", sms_code)
+        const data = {
+            username: login_account,
+            sms_code: sms_code,
+        };
+        // const url = '/sms_login';
+        const xhr = new XMLHttpRequest();
+        // xhr.open('POST', window.location.hostname+"/add_account_message");
+        xhr.open('POST', "sms_login");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // const response = JSON.parse(xhr.responseText);
+                // 处理响应数据
+                console.log(xhr.responseText);
+                alert(xhr.responseText)
+            }
+        };
+        xhr.send(JSON.stringify(data));
+        document.getElementById('adduse').style.display = "none"
+        sms_flag = false
+        window.location.reload();
+    }
+
+    document.getElementById('updateAccountMessage').addEventListener("click", function (event) {
+        // close modal
+
+        const username = document.querySelector('#username').value;
+        const password = document.querySelector('#password').value;
+        const selectedOption = document.querySelector('input[name="options"]:checked').value;
+
+        const ipaddress = document.querySelector('#ipaddress').value;
+        const port = document.querySelector('#port').value;
+
+        if (selectedValue === 'other') {
+            account_type = document.querySelector('#other-type').value;
+        } else {
+            account_type = selectedValue;
+        }
+
+        if (account_type == "") {
+            alert("请选择账号类型")
+            return false
+        }
+        if (username == "") {
+            alert("账号不能为空")
+            return false
+        }
+        if (password == "") {
+            alert("密码不能为空")
+            return false
+        }
+
+        if (ipaddress != "") {
+            var a = ipaddress.split(".")
+            if (a.length != 4) {
+                alert("ip格式不对")
+                return false
+            } else {
+                for (let i = 0; i < a.length; i++) {
+                    if (isNaN(a[i])) {
+                        alert("ip格式不对")
+                        return false
+                    }
+                    if (a[i].length > 3) {
+                        alert("ip格式不对")
+                        return false
+                    }
+                }
+            }
+            if (port == "") {
+                alert("请输入代理端口")
+                return false
+            }
+        }
+
+        if (port != "") {
+            if (isNaN(port)) {
+                alert("端口必须为数字")
+                return false
+            }
+            if (ipaddress == "") {
+                alert("请输入代理ip")
+                return false
+            }
+        }
+
+        const data = {
+            username: username,
+            password: password,
+            account_type: account_type,
+            login_type: selectedOption,
+            proxyip: ipaddress,
+            proxyport: port
+
+        };
+        const url = '/data';
+        const xhr = new XMLHttpRequest();
+        // xhr.open('POST', window.location.hostname+"/add_account_message");
+        xhr.open('POST', "update_account_message");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // const response = JSON.parse(xhr.responseText);
+                // 处理响应数据
+
+                console.log(xhr.responseText);
+                window.location.reload();
+                //document.getElementById('main').contentWindow.location.reload(true);
+
+                alert(xhr.responseText)
+            }
+        };
+        xhr.send(JSON.stringify(data));
+
+        event.target.parentNode.style.visibility = `hidden`;
+        event.target.parentNode.style.opacity = `0`;
+        // close backdrop effect
+        var backdrop = document.getElementsByClassName("backdrop")[0];
+        backdrop.style.opacity = `0`;
+        backdrop.style.visibility = `hidden`;
+
+
+    })
+
+    document.getElementById('cancel').addEventListener("click", function (event) {
+
+        tablef = document.getElementById("updateActable")
+        tablef.style.display = "none"
+    })
+
+    function loadsour() {
+        $('tbody').on("click", "button", function () {
+            var cells = document.getElementById("tbodyacc").querySelectorAll('td');
+            if (this.className == "btn-edit") {
+                var i = 0;
+                const edit_lsit = []
+                cells.forEach(cell => {
+                    edit_lsit[i] = cell.textContent;
+                    i += 1;
+                });
+                console.log(edit_lsit)
+                tablef = document.getElementById("updateActable")
+
+                tablef.focus();
+                use = edit_lsit[0]
+                pass = edit_lsit[1]
+                ip = edit_lsit[5]
+                port = edit_lsit[6]
+                document.getElementById("username").value = use
+                document.getElementById("password").value = pass
+                document.getElementById("ipaddress").value = ip
+                document.getElementById("port").value = port
+
+                var ele = document.getElementsByClassName("modal")[0];
+                ele.style.visibility = `visible`;
+                ele.style.opacity = `1`;
+                // show backdrop effect
+                var backdrop = document.getElementsByClassName("backdrop")[0];
+                backdrop.style.opacity = `1`;
+                backdrop.style.visibility = `visible`;
+                //update account
+                tablef.style.display = "block"
+            } else if (this.className == "btn-delete") {
+
+                var i = 0;
+                const edit_lsit = []
+                cells.forEach(cell => {
+                    edit_lsit[i] = cell.textContent;
+                    i += 1;
+                });
+                use = edit_lsit[0]
+                const data = {
+                    username: use
+                };
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', "delete_account_message");
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        // const response = JSON.parse(xhr.responseText);
+                        // 处理响应数据
+                        console.log(xhr.responseText);
+                        window.location.reload();
+                    }
+                };
+                xhr.send(JSON.stringify(data));
+
+            } else if (this.className == "btn-login") {
+                if (login_flag) {
+                    return
+                }
+                login_flag = true
+                console.log("点击了登录")
+                var i = 0;
+                const login_lsit = []
+                cells.forEach(cell => {
+                    login_lsit[i] = cell.textContent;
+                    i += 1;
+                });
+                console.log(login_lsit)
+                const data = {
+                    username: login_lsit[0],
+                    password: login_lsit[1],
+                };
+                // const url = '/sms_login_send';
+                const xhr = new XMLHttpRequest();
+                // xhr.open('POST', window.location.hostname+"/add_account_message");
+                xhr.open('POST', "sms_login_send");
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        // const response = JSON.parse(xhr.responseText);
+                        // 处理响应数据
+                        console.log(xhr.responseText);
+
+                        alert(xhr.responseText)
+
+                    }
+                };
+                xhr.send(JSON.stringify(data));
+                document.getElementById('adduse').style.display = "block"
+                login_flag = false
+                login_account = login_lsit[0]
+            } else if (this.className == "add-proxy") {
+                alert("addproxy")
+            }
+
+
+        })
+    }
+
+
+</script>
+</body>
+</html>

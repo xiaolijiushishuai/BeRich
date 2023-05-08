@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>添加账号</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        form {
+            margin: 20px auto;
+            width: 400px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px #ddd;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 95%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>添加账号</h1>
+<form>
+    <label for="account-type">账号类型:</label>
+    <select id="account-type" name="account-type" onchange="onAccountTypeChange()">
+        <option value="">请选择账号类型</option>
+        {% for account_type in account_type_list %}
+        <option name="{{account_type}}">{{account_type}}</option>
+        {% endfor %}
+<!--        <option value="">请选择账号类型</option>-->
+<!--        <option value="email">大v账号</option>-->
+<!--        <option value="username">普通账号</option>-->
+<!--        <option value="phone">小账号</option>-->
+        <option value="other">自定义</option>
+    </select><br>
+    <div id="other-account-type" style="display: none;">
+        <label for="other-type">自定义:</label>
+        <input type="text" id="other-type" name="other-type">
+    </div>
+    <label for="username">账号:</label>
+    <input type="text" id="username" name="username" required><br>
+
+    <label for="password">密码:</label>
+    <input type="password" id="password" name="password" required><br>
+
+    <label for="proxyip">代理ip</label>
+    <input type="text" id="proxyip" name="proxyip" required><br>
+
+    <label for="proxyport">代理port</label>
+    <input type="text" id="proxyport" name="proxyport" required><br>
+
+    <label>
+        <input type="radio" name="options" value="密码">
+        密码
+    </label>
+
+    <label>
+        <input type="radio" name="options" value="验证码" checked>
+        验证码
+    </label>
+
+    <label>
+        <input type="radio" name="options" value="扫码">
+        扫码
+    </label>
+
+    <button type="submit" id="add-btn">添加账号</button>
+</form>
+
+<script>
+    const accountTypeSelect = document.querySelector('#account-type');
+    const otherAccountType = document.querySelector('#other-account-type');
+    let selectedValue = ""
+    function onAccountTypeChange() {
+        const selectedOption = accountTypeSelect.options[accountTypeSelect.selectedIndex];
+        selectedValue = selectedOption.value;
+        const selectedText = selectedOption.text;
+
+        if (selectedValue === 'other') {
+            otherAccountType.style.display = 'block';
+        } else {
+            otherAccountType.style.display = 'none';
+        }
+
+        console.log(`选择了 ${selectedText}，值为 ${selectedValue}`);
+    }
+
+    const form = document.querySelector('form');
+    const addBtn = document.querySelector('#add-btn');
+    let account_type = ""
+    addBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        const username = document.querySelector('#username').value;
+        const password = document.querySelector('#password').value;
+
+        const address = document.querySelector('#proxyip').value;
+        const port = document.querySelector('#proxyport').value;
+
+        if (selectedValue === 'other'){
+            account_type = document.querySelector('#other-type').value;
+        }else{
+            account_type = selectedValue;
+        }
+
+        // 在这里，你可以将用户名和密码发送到服务器，来创建新的账号。
+        // 我们这里只是将其打印到控制台上，以作演示。
+        const selectedOption = document.querySelector('input[name="options"]:checked').value;
+        console.log(`用户名：${username}，密码：${password}，类型：${account_type}，登录类型：${selectedOption}`);
+        if(account_type==""){
+            alert("请选择账号类型")
+            return
+        }
+        if(username==""){
+            alert("账号不能为空")
+            return
+        }
+        if(password==""){
+            alert("密码不能为空")
+            return
+        }
+
+        if (address != "") {
+                var a=address.split(".")
+                if (a.length!=4){
+                    alert("ip格式不对")
+                    return false
+                }else {
+                    for (let i = 0; i < a.length; i++) {
+                        if(isNaN(a[i])){
+                            alert("ip格式不对")
+                            return false
+                        }
+                        if(a[i].length>3){
+                            alert("ip格式不对")
+                            return false
+                        }
+                    }
+                }
+                if (port==""){
+                    alert("请输入代理端口")
+                    return false
+                }
+        }
+
+        if (port != "") {
+            if(isNaN(port)){
+                alert("端口必须为数字")
+                return false
+            }
+            if (address==""){
+                    alert("请输入代理ip")
+                    return false
+                }
+        }
+
+
+        const data = {
+            username: username,
+            password: password,
+            account_type:account_type,
+            login_type:selectedOption,
+            proxyip:address,
+            proxyport:port
+        };
+        const url = '/data';
+        const xhr = new XMLHttpRequest();
+        // xhr.open('POST', window.location.hostname+"/add_account_message");
+        xhr.open('POST', "add_account_message");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // const response = JSON.parse(xhr.responseText);
+                // 处理响应数据
+
+                console.log(xhr.responseText);
+                alert(xhr.responseText)
+                window.location.reload();
+            }
+        };
+        xhr.send(JSON.stringify(data));
+        // form.reset();
+    });
+</script>
+</body>
+</html>
