@@ -979,6 +979,7 @@ def keepAccountActive():
                          """
         data2 = dbUtil.run_sql(sql2)
         if data2:
+            print("keepAccountActive start")
             for data in data2:
                 accountid = data[0]
                 sql = """
@@ -997,7 +998,7 @@ if __name__ == '__main__':
     t.start()
     t2 = Thread(target=keepAccountActive)
     t2.start()
-    app.run()
+    app.run(debug=True)
     """
     U:上左，U'上右，
     D:下右，D'下左，
