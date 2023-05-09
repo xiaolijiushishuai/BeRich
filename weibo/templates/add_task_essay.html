@@ -70,6 +70,24 @@
     <br><br>
     <label for="selected">已选择：</label>
     <ul id="selected"></ul>
+
+    <p>请选择任务<p>
+    <label>
+        <input type="radio" name="options" value="发布文章" id="pubessay">
+        发布文章
+    </label>
+
+    <label>
+        <input type="radio" name="options" value="点赞" id="star">
+        点赞
+    </label>
+
+    <label>
+        <input type="radio" name="options" value="评论" id="commont">
+        评论
+    </label>
+
+    <ur style="display: none" id="essay_detail">
     <label for="select">请选择文章：</label>
     <select id="select_essay" multiple>
         {% for articles in article_list %}
@@ -80,6 +98,19 @@
     </select>
     <br><br>
     <label for="selected">已选择：</label>
+    </ur>
+
+    <ur style="display: none" id="comment_detail">
+    <label for="select">请选择评论：</label>
+    <select id="select_essay" multiple>
+        <option value="1">评论1</option>
+        <option value="1">评论2</option>
+        <option value="1">评论3</option>
+    </select>
+    <br><br>
+    <label for="selected">已选择：</label>
+    </ur>
+
     <ul id="selected_essay"></ul>
     <label for="task_name">任务名称:</label>
     <input type="text" id="task_name" name="task_name" required><br>
@@ -96,6 +127,33 @@
 <script>
     const select = document.getElementById('select');
     const selected = document.getElementById('selected');
+    const selected_essay = document.getElementById('selected_essay');
+
+    const pubessay = document.getElementById('pubessay');
+    const star = document.getElementById('star');
+    const commont = document.getElementById('commont');
+
+    pubessay.addEventListener('click', function () {
+        document.getElementById('essay_detail').style.display = 'block';
+        document.getElementById('comment_detail').style.display = 'none';
+        select.remove()
+        selected_essay.innerHTML=""
+    });
+
+    commont.addEventListener('click', function () {
+        document.getElementById('essay_detail').style.display = 'none';
+        document.getElementById('comment_detail').style.display = 'block';
+        select.remove()
+        selected_essay.innerHTML=""
+    });
+
+    star.addEventListener('click', function () {
+        document.getElementById('essay_detail').style.display = 'none';
+        document.getElementById('comment_detail').style.display = 'none';
+        select.remove()
+        selected_essay.innerHTML=""
+    });
+
 
     // 监听选择框的change事件
     select.addEventListener('change', function () {
@@ -130,7 +188,7 @@
 
 
     const select_essay = document.getElementById('select_essay');
-    const selected_essay = document.getElementById('selected_essay');
+
 
     // 监听选择框的change事件
     select_essay.addEventListener('change', function () {
