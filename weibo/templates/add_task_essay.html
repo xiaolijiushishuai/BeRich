@@ -102,10 +102,10 @@
 
     <ur style="display: none" id="comment_detail">
     <label for="select">请选择评论：</label>
-    <select id="select_essay" multiple>
-        <option value="1">评论1</option>
-        <option value="1">评论2</option>
-        <option value="1">评论3</option>
+    <select id="select_comment" multiple>
+        <option value="评论1">评论1</option>
+        <option value="评论2">评论2</option>
+        <option value="评论3">评论3</option>
     </select>
     <br><br>
     <label for="selected">已选择：</label>
@@ -132,28 +132,56 @@
     const pubessay = document.getElementById('pubessay');
     const star = document.getElementById('star');
     const commont = document.getElementById('commont');
+    const select_comment = document.getElementById('select_comment');
 
     pubessay.addEventListener('click', function () {
         document.getElementById('essay_detail').style.display = 'block';
         document.getElementById('comment_detail').style.display = 'none';
-        select.remove()
         selected_essay.innerHTML=""
     });
 
     commont.addEventListener('click', function () {
         document.getElementById('essay_detail').style.display = 'none';
         document.getElementById('comment_detail').style.display = 'block';
-        select.remove()
         selected_essay.innerHTML=""
     });
 
     star.addEventListener('click', function () {
         document.getElementById('essay_detail').style.display = 'none';
         document.getElementById('comment_detail').style.display = 'none';
-        select.remove()
         selected_essay.innerHTML=""
     });
 
+
+    select_comment.addEventListener('change', function () {
+        // 获取当前选择的选项
+        const options = select_comment.selectedOptions;
+
+        // 遍历选项，将选中的选项加入已选择列表中
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+
+            // 判断是否已经存在于已选择列表中
+            if (document.querySelector(`#select_comment [data-value="${option.value}"]`)) {
+                continue;
+            }
+
+            // 创建列表项并添加到已选择列表中
+            const item = document.createElement('li');
+            item.textContent = option.textContent;
+            item.setAttribute('data-value', option.value);
+
+            // 创建删除按钮并添加到列表项中
+            const button = document.createElement('button');
+            button.textContent = '删除';
+            button.addEventListener('click', function () {
+                item.remove();
+            });
+            item.appendChild(button);
+
+            selected_essay.appendChild(item);
+        }
+    });
 
     // 监听选择框的change事件
     select.addEventListener('change', function () {
