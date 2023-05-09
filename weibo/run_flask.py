@@ -979,7 +979,7 @@ def keepAccountActive():
                          """
         data2 = dbUtil.run_sql(sql2)
         if data2:
-            print("keepAccountActive start")
+            print("keepAccountActive start ")
             for data in data2:
                 accountid = data[0]
                 sql = """
