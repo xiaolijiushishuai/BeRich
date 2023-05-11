@@ -71,30 +71,24 @@ def update_cookies_header(username, accountid):
     data2 = dbUtil.run_sql(sql2)
     if data2:
         print(data2)
+        print("update cookie start")
         for data in data2:
             header = data[0]
             headers = ast.literal_eval(header)
             cookie = data[1]
             cookies = eval(cookie)
-            print(cookies)
-            print(type(cookies))
             accountid = data[2]
             browser = get_webdriver(username)
             browser.get("https://m.weibo.cn/compose/")
             browser.delete_all_cookies()
             browser.headers = headers
             for cookie111 in cookies:
-                print(type(cookie111))
-                print(cookie111)
                 browser.add_cookie(cookie111)
             browser.get("https://m.weibo.cn")
             cookies = {}
-            print(browser.get_cookies())
             for item in browser.get_cookies():
                 cookies[item["name"]] = item["value"]
-
             head = {}
-
             for b_request in browser.requests:
                 if b_request.response and '/m.weibo.cn/api/config' in b_request.url:
                     for key in b_request.headers:
@@ -114,7 +108,11 @@ def update_cookies_header(username, accountid):
             sql2 = """
                                  update `weibo`.`login_hold` set `header`='{}',`cookie`='{}',`webcookie`="{}"  where account_id='{}'
                              """.format(head, cookies, webcookies, accountid)
+            print(sql2)
             data2 = dbUtil.run_sql(sql2)
+            if data2:
+                print("update cookie success")
+            close_webdriver(username)
 
 
 @app.route('/sms_login', methods=['POST'])
@@ -824,6 +822,7 @@ def addtaskessay():
     selected_values_essay = request.json['selectedValues_essay']
     execute_begin_time = request.json['execute_begin_time']
     execute_end_time = request.json['execute_end_time']
+    mession_type=request.json['mession_type']
     # 解析字符串为datetime对象
     d1 = datetime.datetime.strptime(execute_begin_time, '%Y-%m-%d %H:%M')
     d2 = datetime.datetime.strptime(execute_end_time, '%Y-%m-%d %H:%M')
@@ -840,9 +839,14 @@ def addtaskessay():
         execute_time = str(d1 + datetime.timedelta(seconds=sjs+sjs_sum))[:-3]
         execute_account = account_list[account_index]
         new_time = get_new_time()
-        sql = """
-                INSERT INTO `weibo`.`mession`(`account`, `article_title`, `created_at`,`excute_time`,`status`,`task_name`) VALUES ('{}', '{}', '{}','{}','{}','{}')
-            """.format(execute_account, essay, new_time, execute_time, "P", task_name)
+        if mession_type=="essay":
+            sql = """
+                    INSERT INTO `weibo`.`mession`(`account`, `article_title`, `created_at`,`excute_time`,`status`,`task_name`) VALUES ('{}', '{}', '{}','{}','{}','{}')
+                """.format(execute_account, essay, new_time, execute_time, "P", task_name)
+        elif mession_type=="common":
+            print("common")
+        else:
+            print("star")
         print(sql)
         dbUtil.run_sql(sql)
         update_essay_status(essay)

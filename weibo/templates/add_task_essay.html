@@ -73,17 +73,17 @@
 
     <p>请选择任务<p>
     <label>
-        <input type="radio" name="options" value="发布文章" id="pubessay">
+        <input type="radio" name="options" value="essay" id="pubessay">
         发布文章
     </label>
 
     <label>
-        <input type="radio" name="options" value="点赞" id="star">
+        <input type="radio" name="options" value="common" id="star">
         点赞
     </label>
 
     <label>
-        <input type="radio" name="options" value="评论" id="commont">
+        <input type="radio" name="options" value="common" id="commont">
         评论
     </label>
 
@@ -263,6 +263,7 @@
         const end_time = document.querySelector('#end_time').value;
         const execute_begin_time = begin_date + " " + begin_time
         const execute_end_time = end_date + " " + end_time
+        var mession_type=get_value()
         console.log(execute_begin_time, execute_end_time)
 
 
@@ -296,6 +297,7 @@
             selectedValues_essay: selectedValues_essay,
             execute_begin_time:execute_begin_time,
             execute_end_time:execute_end_time,
+            mession_type:mession_type
         };
         const xhr = new XMLHttpRequest();
         xhr.open('POST', "addtaskessay");
@@ -315,6 +317,17 @@
         xhr.send(JSON.stringify(data));
 
     });
+
+    function get_value(){
+        var radioSel = document.getElementsByName("options");
+        for(var i=0;i<radioSel.length;i++){
+            var i_obj = radioSel[i];
+            if(i_obj.checked){
+            var i_value = i_obj.value;
+                alert(i_value)
+            }
+        }
+    }
 </script>
 </body>
 </html>
