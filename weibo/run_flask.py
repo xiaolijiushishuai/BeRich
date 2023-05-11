@@ -749,7 +749,6 @@ def add_essay():
     essay_type_list = data or ["大v账号", "普通账号", "小账号"]
     return render_template('add_essay.html', essay_type_list=essay_type_list)
 
-
 @app.route('/manage_essay.html')
 def manage_essay():
     sql = """
