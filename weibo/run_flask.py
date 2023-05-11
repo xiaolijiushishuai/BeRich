@@ -732,7 +732,6 @@ def add_proxy():
     account_type_list = data or ["大v账号", "普通账号", "小账号"]
     return render_template('add_proxy.html', account_type_list=account_type_list)
 
-
 @app.route('/manage_proxy.html')
 def manage_proxy():
     return render_template('manage_proxy.html', account_type_list=["大v账号", "普通账号", "小账号"])
