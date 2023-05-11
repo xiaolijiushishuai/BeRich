@@ -993,8 +993,14 @@ def keepAccountActive():
                 update_cookies_header(account_name, accountid)
         time.sleep(180)
 
+def init_loginholdAndaccountStatus():
+    sql = "delete `weibo`.`login_hold`"
+    dbUtil.run_sql(sql)
+    sql2="update `weibo`.`account` set `last_login_status`='fail'"
+    dbUtil.run_sql(sql2)
 
 if __name__ == '__main__':
+    init_loginholdAndaccountStatus()
     t = Thread(target=batch)
     t.start()
     t2 = Thread(target=keepAccountActive)
