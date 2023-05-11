@@ -18,9 +18,9 @@ class dbUtil:
     # 定义创建sql连接的私有方法
     @classmethod
     def __get_connect(cls, host="127.0.0.1",
-                      port=3306,
+                      port=3307,
                       user="root",
-                      password="123456",
+                      password="password",
                       db="weibo",
                       ssl={'ca': 'apsaradb-ca-chain.pem', 'check_hostname': False}):
         """
