@@ -737,7 +737,6 @@ def add_proxy():
 def manage_proxy():
     return render_template('manage_proxy.html', account_type_list=["大v账号", "普通账号", "小账号"])
 
-
 @app.route('/add_essay.html')
 def add_essay():
     sql = """
