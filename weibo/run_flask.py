@@ -400,6 +400,25 @@ def update_essay_message():
     return "修改成功"
 
 
+@app.route('/update_comment_message', methods=['POST'])
+def update_comment_message():
+    essay_type = request.json['essay_type']
+    comment_id = request.json['comment_id']
+    title = request.json['title']
+    content = request.json['content']
+
+    essay_type_flag = select_article_type_by_name(essay_type)
+    if not essay_type_flag:
+        add_essay_type(essay_type)
+    essayid = select_article_type_id_by_name(essay_type)
+    new_time = get_new_time()
+    sql = """
+            UPDATE `weibo`.`manage_comment` SET  `content`='{}' , `updated_at`='{}' where `id`='{}'
+        """.format(content, new_time, comment_id)
+    dbUtil.run_sql(sql)
+    return "修改成功"
+
+
 @app.route('/searchByAccountType', methods=['POST'])
 def searchByAccountType():
     account_type = request.json['account_type']
@@ -510,6 +529,15 @@ def delete_essay():
     dbUtil.run_sql(sql)
     return "删除成功"
 
+@app.route('/delete_comment_message', methods=['POST'])
+def delete_comment():
+    article_title = request.json['article_title']
+    sql = """
+            DELETE from `weibo`.`manage_comment` where `id`='{}'
+        """.format(article_title)
+    print(sql)
+    dbUtil.run_sql(sql)
+    return "删除成功"
 
 @app.route('/add_essay_message', methods=['POST'])
 def add_essay_message():
@@ -772,6 +800,24 @@ def manage_essay():
 
     return render_template('manage_essay.html', account_essay_list=account_essay_list,
                            article_type_list=article_type_list)
+
+
+@app.route('/manage_comment.html')
+def manage_comment():
+    sql = """
+        SELECT
+            t1.id,
+            t1.commentator,
+            t1.content
+        FROM
+            `weibo`.`manage_comment` t1 
+        WHERE status='unpublished'
+    	"""
+    account_comment_list = dbUtil.run_sql(sql)
+    print(sql)
+    print(account_comment_list)
+
+    return render_template('manage_comment.html', account_essay_list=account_comment_list)
 
 
 @app.route('/add_task_essay.html')
