@@ -71,24 +71,30 @@ def update_cookies_header(username, accountid):
     data2 = dbUtil.run_sql(sql2)
     if data2:
         print(data2)
-        print("update cookie start")
         for data in data2:
             header = data[0]
             headers = ast.literal_eval(header)
             cookie = data[1]
             cookies = eval(cookie)
+            print(cookies)
+            print(type(cookies))
             accountid = data[2]
             browser = get_webdriver(username)
             browser.get("https://m.weibo.cn/compose/")
             browser.delete_all_cookies()
             browser.headers = headers
             for cookie111 in cookies:
+                print(type(cookie111))
+                print(cookie111)
                 browser.add_cookie(cookie111)
             browser.get("https://m.weibo.cn")
             cookies = {}
+            print(browser.get_cookies())
             for item in browser.get_cookies():
                 cookies[item["name"]] = item["value"]
+
             head = {}
+
             for b_request in browser.requests:
                 if b_request.response and '/m.weibo.cn/api/config' in b_request.url:
                     for key in b_request.headers:
@@ -108,11 +114,7 @@ def update_cookies_header(username, accountid):
             sql2 = """
                                  update `weibo`.`login_hold` set `header`='{}',`cookie`='{}',`webcookie`="{}"  where account_id='{}'
                              """.format(head, cookies, webcookies, accountid)
-            print(sql2)
             data2 = dbUtil.run_sql(sql2)
-            if data2:
-                print("update cookie success")
-            close_webdriver(username)
 
 
 @app.route('/sms_login', methods=['POST'])
@@ -400,6 +402,25 @@ def update_essay_message():
     return "修改成功"
 
 
+@app.route('/update_comment_message', methods=['POST'])
+def update_comment_message():
+    essay_type = request.json['essay_type']
+    comment_id = request.json['comment_id']
+    title = request.json['title']
+    content = request.json['content']
+
+    essay_type_flag = select_article_type_by_name(essay_type)
+    if not essay_type_flag:
+        add_essay_type(essay_type)
+    essayid = select_article_type_id_by_name(essay_type)
+    new_time = get_new_time()
+    sql = """
+            UPDATE `weibo`.`manage_comment` SET  `content`='{}' , `updated_at`='{}' where `id`='{}'
+        """.format(content, new_time, comment_id)
+    dbUtil.run_sql(sql)
+    return "修改成功"
+
+
 @app.route('/searchByAccountType', methods=['POST'])
 def searchByAccountType():
     account_type = request.json['account_type']
@@ -510,6 +531,15 @@ def delete_essay():
     dbUtil.run_sql(sql)
     return "删除成功"
 
+@app.route('/delete_comment_message', methods=['POST'])
+def delete_comment():
+    article_title = request.json['article_title']
+    sql = """
+            DELETE from `weibo`.`manage_comment` where `id`='{}'
+        """.format(article_title)
+    print(sql)
+    dbUtil.run_sql(sql)
+    return "删除成功"
 
 @app.route('/add_essay_message', methods=['POST'])
 def add_essay_message():
@@ -732,9 +762,11 @@ def add_proxy():
     account_type_list = data or ["大v账号", "普通账号", "小账号"]
     return render_template('add_proxy.html', account_type_list=account_type_list)
 
+
 @app.route('/manage_proxy.html')
 def manage_proxy():
     return render_template('manage_proxy.html', account_type_list=["大v账号", "普通账号", "小账号"])
+
 
 @app.route('/add_essay.html')
 def add_essay():
@@ -746,6 +778,7 @@ def add_essay():
         data = [type_name[0] for type_name in data]
     essay_type_list = data or ["大v账号", "普通账号", "小账号"]
     return render_template('add_essay.html', essay_type_list=essay_type_list)
+
 
 @app.route('/manage_essay.html')
 def manage_essay():
@@ -772,6 +805,24 @@ def manage_essay():
 
     return render_template('manage_essay.html', account_essay_list=account_essay_list,
                            article_type_list=article_type_list)
+
+
+@app.route('/manage_comment.html')
+def manage_comment():
+    sql = """
+        SELECT
+            t1.id,
+            t1.commentator,
+            t1.content
+        FROM
+            `weibo`.`manage_comment` t1 
+        WHERE status='unpublished'
+    	"""
+    account_comment_list = dbUtil.run_sql(sql)
+    print(sql)
+    print(account_comment_list)
+
+    return render_template('manage_comment.html', account_essay_list=account_comment_list)
 
 
 @app.route('/add_task_essay.html')
@@ -814,12 +865,11 @@ def update_essay_status(article_title):
 
 @app.route('/addtaskessay', methods=['POST'])
 def addtaskessay():
-    task_name = request.json['task_name']   # 任务名称
-    selected_values = request.json['selectedValues']    #
+    task_name = request.json['task_name']  # 任务名称
+    selected_values = request.json['selectedValues']  #
     selected_values_essay = request.json['selectedValues_essay']
     execute_begin_time = request.json['execute_begin_time']
     execute_end_time = request.json['execute_end_time']
-    mession_type=request.json['mession_type']
     # 解析字符串为datetime对象
     d1 = datetime.datetime.strptime(execute_begin_time, '%Y-%m-%d %H:%M')
     d2 = datetime.datetime.strptime(execute_end_time, '%Y-%m-%d %H:%M')
@@ -832,26 +882,19 @@ def addtaskessay():
         if not account_list:
             account_list = selected_values.copy()
         account_index = 0 if len(account_list) == 1 else random.randint(0, len(account_list) - 1)
-        sjs = random.randint(int(seconds/len(selected_values_essay)/10*8), int(seconds/len(selected_values_essay)))
-        execute_time = str(d1 + datetime.timedelta(seconds=sjs+sjs_sum))[:-3]
+        sjs = random.randint(int(seconds / len(selected_values_essay) / 10 * 8),
+                             int(seconds / len(selected_values_essay)))
+        execute_time = str(d1 + datetime.timedelta(seconds=sjs + sjs_sum))[:-3]
         execute_account = account_list[account_index]
         new_time = get_new_time()
-        if mession_type=="essay":
-            sql = """
-                    INSERT INTO `weibo`.`mession`(`account`, `article_title`, `created_at`,`excute_time`,`status`,`task_name`) VALUES ('{}', '{}', '{}','{}','{}','{}')
-                """.format(execute_account, essay, new_time, execute_time, "P", task_name)
-        elif mession_type=="common":
-            print("common")
-        else:
-            print("star")
+        sql = """
+                INSERT INTO `weibo`.`mession`(`account`, `article_title`, `created_at`,`excute_time`,`status`,`task_name`) VALUES ('{}', '{}', '{}','{}','{}','{}')
+            """.format(execute_account, essay, new_time, execute_time, "P", task_name)
         print(sql)
         dbUtil.run_sql(sql)
         update_essay_status(essay)
         account_list.pop(account_index)
         sjs_sum += sjs
-
-
-
 
     # aclist = "".join(selected_values)
     # essaylist = "".join(selected_values_essay)
@@ -980,7 +1023,6 @@ def keepAccountActive():
                          """
         data2 = dbUtil.run_sql(sql2)
         if data2:
-            print("keepAccountActive start ")
             for data in data2:
                 accountid = data[0]
                 sql = """
@@ -993,19 +1035,13 @@ def keepAccountActive():
                 update_cookies_header(account_name, accountid)
         time.sleep(180)
 
-def init_loginholdAndaccountStatus():
-    sql = "delete `weibo`.`login_hold`"
-    dbUtil.run_sql(sql)
-    sql2="update `weibo`.`account` set `last_login_status`='fail'"
-    dbUtil.run_sql(sql2)
 
 if __name__ == '__main__':
-    init_loginholdAndaccountStatus()
     t = Thread(target=batch)
     t.start()
     t2 = Thread(target=keepAccountActive)
     t2.start()
-    app.run(debug=True)
+    app.run()
     """
     U:上左，U'上右，
     D:下右，D'下左，
