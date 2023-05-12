@@ -62,56 +62,57 @@
     <label for="select">请选择账号：</label>
     <select id="select" multiple>
         {% for accounts in account_list %}
-        {% for accountsname in accounts %}
-        <option value="{{accountsname}}">{{accountsname}}</option>
-        {% endfor %}
+            {% for accountsname in accounts %}
+                <option value="{{ accountsname }}">{{ accountsname }}</option>
+            {% endfor %}
         {% endfor %}
     </select>
     <br><br>
     <label for="selected">已选择：</label>
     <ul id="selected"></ul>
 
-    <p>请选择任务<p>
-    <label>
-        <input type="radio" name="options" value="essay" id="pubessay">
-        发布文章
-    </label>
+    <p>请选择任务
+    <p>
+        <label>
+            <input type="radio" name="options" value="essay" id="pubessay">
+            发布文章
+        </label>
 
 
-    <label>
-        <input type="radio" name="options" value="common" id="star">
-        点赞
-    </label>
+        <label>
+            <input type="radio" name="options" value="star" id="star">
+            点赞
+        </label>
 
 
-    <label>
-        <input type="radio" name="options" value="common" id="commont">
-        评论
-    </label>
+        <label>
+            <input type="radio" name="options" value="common" id="commont">
+            评论
+        </label>
 
-    <ur style="display: none" id="essay_detail">
-    <label for="select">请选择文章：</label>
-    <select id="select_essay" multiple>
-        {% for articles in article_list %}
-        {% for article in articles %}
-        <option value="{{article}}">{{article}}</option>
-        {% endfor %}
-        {% endfor %}
-    </select>
-    <br><br>
-    <label for="selected">已选择：</label>
-    </ur>
+        <ur style="display: none" id="essay_detail">
+            <label for="select">请选择文章：</label>
+            <select id="select_essay" multiple>
+                {% for articles in article_list %}
+                    {% for article in articles %}
+                        <option value="{{ article }}">{{ article }}</option>
+                    {% endfor %}
+                {% endfor %}
+            </select>
+            <br><br>
+            <label for="selected">已选择：</label>
+        </ur>
 
-    <ur style="display: none" id="comment_detail">
-    <label for="select">请选择评论：</label>
-    <select id="select_comment" multiple>
-        <option value="评论1">评论1</option>
-        <option value="评论2">评论2</option>
-        <option value="评论3">评论3</option>
-    </select>
-    <br><br>
-    <label for="selected">已选择：</label>
-    </ur>
+        <ur style="display: none" id="comment_detail">
+            <label for="select">请选择评论：</label>
+            <select id="select_comment" multiple>
+                <option value="评论1">评论1</option>
+                <option value="评论2">评论2</option>
+                <option value="评论3">评论3</option>
+            </select>
+            <br><br>
+            <label for="selected">已选择：</label>
+        </ur>
 
     <ul id="selected_essay"></ul>
     <label for="task_name">任务名称:</label>
@@ -139,19 +140,19 @@
     pubessay.addEventListener('click', function () {
         document.getElementById('essay_detail').style.display = 'block';
         document.getElementById('comment_detail').style.display = 'none';
-        selected_essay.innerHTML=""
+        selected_essay.innerHTML = ""
     });
 
     commont.addEventListener('click', function () {
         document.getElementById('essay_detail').style.display = 'none';
         document.getElementById('comment_detail').style.display = 'block';
-        selected_essay.innerHTML=""
+        selected_essay.innerHTML = ""
     });
 
     star.addEventListener('click', function () {
         document.getElementById('essay_detail').style.display = 'none';
         document.getElementById('comment_detail').style.display = 'none';
-        selected_essay.innerHTML=""
+        selected_essay.innerHTML = ""
     });
 
 
@@ -265,41 +266,56 @@
         const end_time = document.querySelector('#end_time').value;
         const execute_begin_time = begin_date + " " + begin_time
         const execute_end_time = end_date + " " + end_time
-        var mession_type=get_value()
+        var mession_type = get_value()
         console.log(execute_begin_time, execute_end_time)
 
+        if(mession_type==undefined){
+            alert("请选择任务类型")
+            return;
+        }
 
         // 在这里，你可以将用户名和密码发送到服务器，来创建新的账号。
         // 我们这里只是将其打印到控制台上，以作演示。
         const selectedValues = [];
-        // 遍历已选择列表中的每一个列表项
-        document.querySelectorAll('#selected li').forEach(function (item) {
-            // 将每个列表项的data-value属性的值加入已选择值的数组中
-            selectedValues.push(item.getAttribute('data-value'));
-        });
+        const common_list = [];
         const selectedValues_essay = [];
         // 遍历已选择列表中的每一个列表项
-        document.querySelectorAll('#selected_essay li').forEach(function (item) {
-            // 将每个列表项的data-value属性的值加入已选择值的数组中
-            selectedValues_essay.push(item.getAttribute('data-value'));
+        document.querySelectorAll('#selected li').forEach(function (item) {
+                // 将每个列表项的data-value属性的值加入已选择值的数组中
+            selectedValues.push(item.getAttribute('data-value'));
         });
-        console.log(selectedValues_essay);
-        console.log(`任务名称：${task_name}, 账号列表：${selectedValues},文章列表：${selectedValues_essay}`);
-        if(selectedValues_essay.length<selectedValues.length){
-            alert("文章数必须大于账号数")
-            return
+        if (mession_type == "essay") {
+
+            // 遍历已选择列表中的每一个列表项
+            document.querySelectorAll('#selected_essay li').forEach(function (item) {
+                // 将每个列表项的data-value属性的值加入已选择值的数组中
+                selectedValues_essay.push(item.getAttribute('data-value'));
+            });
+            console.log(selectedValues_essay);
+            console.log(`任务名称：${task_name}, 账号列表：${selectedValues},文章列表：${selectedValues_essay}`);
+            if (selectedValues_essay.length < selectedValues.length) {
+                alert("文章数必须大于账号数")
+                return
+            }
+            if (execute_begin_time > execute_end_time) {
+                alert("开始时间不能大于结束时间")
+                return
+            }
+        }else if(mession_type == "common"){
+            document.querySelectorAll('#selected_essay li').forEach(function (item) {
+                // 将每个列表项的data-value属性的值加入已选择值的数组中
+                common_list.push(item.getAttribute('data-value'));
+            });
         }
-        if(execute_begin_time>execute_end_time){
-            alert("开始时间不能大于结束时间")
-            return
-        }
+        alert(mession_type)
         const data = {
             task_name: task_name,
             selectedValues: selectedValues,
             selectedValues_essay: selectedValues_essay,
-            execute_begin_time:execute_begin_time,
-            execute_end_time:execute_end_time,
-            mession_type:mession_type
+            execute_begin_time: execute_begin_time,
+            execute_end_time: execute_end_time,
+            mession_type: mession_type,
+            common_list:common_list
         };
         const xhr = new XMLHttpRequest();
         xhr.open('POST', "addtaskessay");
@@ -320,13 +336,13 @@
 
     });
 
-    function get_value(){
+    function get_value() {
         var radioSel = document.getElementsByName("options");
-        for(var i=0;i<radioSel.length;i++){
+        for (var i = 0; i < radioSel.length; i++) {
             var i_obj = radioSel[i];
-            if(i_obj.checked){
-            var i_value = i_obj.value;
-                alert(i_value)
+            if (i_obj.checked) {
+                var i_value = i_obj.value;
+                return i_value
             }
         }
     }

@@ -677,7 +677,8 @@ def manage_account():
         li1.append(li3)
     account_list = li1
     if not account_list:
-        account_list = [["账号1", "密码1", "小账号", "无需登录"], ["账号2", "密码2", "大账号", "需要登录"], ["账号3", "密码3", "普通账号", "无需登录"]]
+        account_list = [["账号1", "密码1", "小账号", "无需登录"], ["账号2", "密码2", "大账号", "需要登录"],
+                        ["账号3", "密码3", "普通账号", "无需登录"]]
     return render_template('manage_account.html', account_list=account_list, account_type_list=account_type_list)
 
 
@@ -732,9 +733,11 @@ def add_proxy():
     account_type_list = data or ["大v账号", "普通账号", "小账号"]
     return render_template('add_proxy.html', account_type_list=account_type_list)
 
+
 @app.route('/manage_proxy.html')
 def manage_proxy():
     return render_template('manage_proxy.html', account_type_list=["大v账号", "普通账号", "小账号"])
+
 
 @app.route('/add_essay.html')
 def add_essay():
@@ -746,6 +749,7 @@ def add_essay():
         data = [type_name[0] for type_name in data]
     essay_type_list = data or ["大v账号", "普通账号", "小账号"]
     return render_template('add_essay.html', essay_type_list=essay_type_list)
+
 
 @app.route('/manage_essay.html')
 def manage_essay():
@@ -814,12 +818,14 @@ def update_essay_status(article_title):
 
 @app.route('/addtaskessay', methods=['POST'])
 def addtaskessay():
-    task_name = request.json['task_name']   # 任务名称
-    selected_values = request.json['selectedValues']    #
+    task_name = request.json['task_name']  # 任务名称
+    selected_values = request.json['selectedValues']  #
     selected_values_essay = request.json['selectedValues_essay']
     execute_begin_time = request.json['execute_begin_time']
     execute_end_time = request.json['execute_end_time']
-    mession_type=request.json['mession_type']
+    mession_type = request.json['mession_type']
+    common_list = request.json['common_list']
+
     # 解析字符串为datetime对象
     d1 = datetime.datetime.strptime(execute_begin_time, '%Y-%m-%d %H:%M')
     d2 = datetime.datetime.strptime(execute_end_time, '%Y-%m-%d %H:%M')
@@ -828,30 +834,45 @@ def addtaskessay():
     sjs_sum = 0
     account_list = []
     # 根据时间范围和文章个数得出随机数
-    for essay in selected_values_essay:
-        if not account_list:
-            account_list = selected_values.copy()
-        account_index = 0 if len(account_list) == 1 else random.randint(0, len(account_list) - 1)
-        sjs = random.randint(int(seconds/len(selected_values_essay)/10*8), int(seconds/len(selected_values_essay)))
-        execute_time = str(d1 + datetime.timedelta(seconds=sjs+sjs_sum))[:-3]
-        execute_account = account_list[account_index]
-        new_time = get_new_time()
-        if mession_type=="essay":
+    if mession_type == "essay":
+        for essay in selected_values_essay:
+            if not account_list:
+                account_list = selected_values.copy()
+            account_index = 0 if len(account_list) == 1 else random.randint(0, len(account_list) - 1)
+            sjs = random.randint(int(seconds / len(selected_values_essay) / 10 * 8),
+                                 int(seconds / len(selected_values_essay)))
+            execute_time = str(d1 + datetime.timedelta(seconds=sjs + sjs_sum))[:-3]
+            execute_account = account_list[account_index]
+            new_time = get_new_time()
             sql = """
-                    INSERT INTO `weibo`.`mession`(`account`, `article_title`, `created_at`,`excute_time`,`status`,`task_name`) VALUES ('{}', '{}', '{}','{}','{}','{}')
-                """.format(execute_account, essay, new_time, execute_time, "P", task_name)
-        elif mession_type=="common":
-            print("common")
-        else:
-            print("star")
-        print(sql)
-        dbUtil.run_sql(sql)
-        update_essay_status(essay)
-        account_list.pop(account_index)
-        sjs_sum += sjs
-
-
-
+                        INSERT INTO `weibo`.`mession`(`account`, `article_title`, `created_at`,`excute_time`,`status`,`task_name`,`mession_type`) VALUES ('{}', '{}', '{}','{}','{}','{}','{}')
+            """.format(execute_account, essay, new_time, execute_time, "P", task_name, mession_type)
+            print(sql)
+            dbUtil.run_sql(sql)
+            update_essay_status(essay)
+            account_list.pop(account_index)
+            sjs_sum += sjs
+    elif mession_type == "common":
+        for common in common_list:
+            for account in selected_values:
+                sjs = random.randint(0,seconds)
+                execute_time = str(d1 + datetime.timedelta(seconds=sjs))[:-3]
+                new_time = get_new_time()
+                sql = """
+                            INSERT INTO `weibo`.`mession`(`account`, `common_detail`, `created_at`,`excute_time`,`status`,`task_name`,`mession_type`) VALUES ('{}', '{}', '{}','{}','{}','{}','{}')
+                """.format(account, common, new_time, execute_time, "P", task_name, mession_type)
+                print(sql)
+                dbUtil.run_sql(sql)
+    elif mession_type == "star":
+        for execute_account in selected_values:
+            sjs = random.randint(0, seconds)
+            execute_time = str(d1 + datetime.timedelta(seconds=sjs))[:-3]
+            new_time = get_new_time()
+            sql = """
+                                    INSERT INTO `weibo`.`mession`(`account`, `created_at`,`excute_time`,`status`,`task_name`,`mession_type`) VALUES ('{}', '{}', '{}','{}','{}','{}')
+                        """.format(execute_account, new_time, execute_time, "P", task_name, mession_type)
+            print(sql)
+            dbUtil.run_sql(sql)
 
     # aclist = "".join(selected_values)
     # essaylist = "".join(selected_values_essay)
@@ -993,11 +1014,13 @@ def keepAccountActive():
                 update_cookies_header(account_name, accountid)
         time.sleep(180)
 
+
 def init_loginholdAndaccountStatus():
-    sql = "delete `weibo`.`login_hold`"
+    sql = "delete from `weibo`.`login_hold`"
     dbUtil.run_sql(sql)
-    sql2="update `weibo`.`account` set `last_login_status`='fail'"
+    sql2 = "update `weibo`.`account` set `last_login_status`='fail'"
     dbUtil.run_sql(sql2)
+
 
 if __name__ == '__main__':
     init_loginholdAndaccountStatus()

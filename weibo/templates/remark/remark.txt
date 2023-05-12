@@ -1,32 +1,3 @@
-1.修改了account 表
-ALTER TABLE account add proxy_id varchar(20)
-ALTER TABLE account MODIFY last_login_status VARCHAR(20)
-
-2.修改了proxy表
-alter table proxy drop account_count
-
-3.新增了mession表
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
-
--- ----------------------------
--- Table structure for mession
--- ----------------------------
-DROP TABLE IF EXISTS `mession`;
-CREATE TABLE `mession`  (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `created_at` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '创建时间',
-  `updated_at` datetime(0) NULL DEFAULT CURRENT_TIMESTAMP(0) COMMENT '更新时间',
-  `excute_time` datetime(0) NULL DEFAULT NULL,
-  `article_title` varchar(5000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `account` varchar(5000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `status` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  `task_name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
-SET FOREIGN_KEY_CHECKS = 1;
-
-4.修改了login_hold表
-alter table login_hold add webheader varchar(5000)
-alter table login_hold add webcookie varchar(5000)
+1.修改了mession 表
+alter table mession add mession_type VARCHAR(20)
+alter table mession add common_detail VARCHAR(5000)
