@@ -968,7 +968,6 @@ def fb_log():
 
     return render_template('fb_log.html', joblist=html_jobList)
 
-
 def batch():
     while True:
         sql = "SELECT id,account, article_title, excute_time,`status`,task_name,DATE_FORMAT(excute_time, '%Y-%m-%d %H:%i'),`mession_type`,`common_detail` from `mession` where `status`='P'"
