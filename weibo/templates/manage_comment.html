@@ -171,7 +171,7 @@
 <table>
     <thead>
     <tr>
-        <th>评论人</th>
+        <th>序号</th>
         <th>评论内容</th>
         <th>操作</th>
     </tr>
@@ -179,9 +179,10 @@
     <tbody>
     {% for essay in account_essay_list %}
     <tr>
-        <td style="display: none;">{{essay.0}}</td>
-        <td contenteditable="true">{{essay.1}}</td>
+        <td>{{essay.3}}</td>
+        <td style="display: none;" contenteditable="true">{{essay.1}}</td>
         <td contenteditable="true">{{essay.2}}</td>
+        <td style="display: none;" contenteditable="true">{{essay.0}}</td>
         <td>
             <button class="btn-edit">修改</button>
             <button class="btn-delete">删除</button>
@@ -195,8 +196,8 @@
 <form class="backdrop" style="display: none" id="updateessay">
     <div id="updateDicid">
         <input style="display: none;" type="text" id="c_id" name="c_id" readonly><br>
-        <label for="tt">评论人:</label>
-        <input type="text" id="tt" name="tt" readonly><br>
+        <label  style="display: none;" for="tt">评论人:</label>
+        <input style="display: none;"  type="text" id="tt" name="tt" readonly><br>
         <label for="essay">内容:</label>
         <textarea type="text" id="essay" name="username" required style="width: 380px;height: 280px"></textarea><br>
 
@@ -222,7 +223,7 @@
                 edit_lsit[i] = cell.textContent;
                 i += 1;
             });
-            comment_id = edit_lsit[0]
+            comment_id = edit_lsit[3]
             title = edit_lsit[1]
             content = edit_lsit[2]
 
@@ -252,7 +253,7 @@
                 edit_lsit[i] = cell.textContent;
                 i += 1;
             });
-            title = edit_lsit[0]
+            title = edit_lsit[3]
 
             const data = {
                 article_title: title,

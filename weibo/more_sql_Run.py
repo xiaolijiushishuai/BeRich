@@ -18,7 +18,7 @@ class dbUtil:
     # 定义创建sql连接的私有方法
     @classmethod
     def __get_connect(cls, host="127.0.0.1",
-                      port=3307,
+                      port=3306,
                       user="root",
                       password="password",
                       db="weibo",

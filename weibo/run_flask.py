@@ -418,6 +418,7 @@ def update_comment_message():
             UPDATE `weibo`.`manage_comment` SET  `content`='{}' , `updated_at`='{}' where `id`='{}'
         """.format(content, new_time, comment_id)
     dbUtil.run_sql(sql)
+    print(sql)
     return "修改成功"
 
 
@@ -531,6 +532,7 @@ def delete_essay():
     dbUtil.run_sql(sql)
     return "删除成功"
 
+
 @app.route('/delete_comment_message', methods=['POST'])
 def delete_comment():
     article_title = request.json['article_title']
@@ -540,6 +542,7 @@ def delete_comment():
     print(sql)
     dbUtil.run_sql(sql)
     return "删除成功"
+
 
 @app.route('/add_essay_message', methods=['POST'])
 def add_essay_message():
@@ -555,6 +558,15 @@ def add_essay_message():
     article_type_id = select_article_type_id_by_name(essay_type)
     add_article(article_type_id, essay, essay_title)
     return "添加文章成功"
+
+
+@app.route('/add_comment_message', methods=['POST'])
+def add_comment_message():
+    essay = request.json['essay']
+    sql = """INSERT INTO `weibo`.`manage_comment`(`content`) VALUES ('{}')""".format(essay)
+    print(sql)
+    dbUtil.run_sql(sql)
+    return "添加评论成功"
 
 
 def select_essay_by_article_title(article_title):
@@ -768,6 +780,11 @@ def manage_proxy():
     return render_template('manage_proxy.html', account_type_list=["大v账号", "普通账号", "小账号"])
 
 
+@app.route('/add_comment.html')
+def add_comment():
+    return render_template('add_comment.html')
+
+
 @app.route('/add_essay.html')
 def add_essay():
     sql = """
@@ -819,10 +836,17 @@ def manage_comment():
         WHERE status='unpublished'
     	"""
     account_comment_list = dbUtil.run_sql(sql)
+    list_data = []
+    number = 1
+    for i in account_comment_list:
+        list_i = list(i)
+        list_i.append(number)
+        list_data.append(list_i)
+        number = number + 1
     print(sql)
-    print(account_comment_list)
+    print(list_data)
 
-    return render_template('manage_comment.html', account_essay_list=account_comment_list)
+    return render_template('manage_comment.html', account_essay_list=list_data)
 
 
 @app.route('/add_task_essay.html')

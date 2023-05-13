@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>添加文章</title>
+    <title>添加评论</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -44,26 +44,12 @@
     </style>
 </head>
 <body>
-<h1>添加文章</h1>
+<h1>添加评论</h1>
 <form>
-    <label for="account-type">文章类型:</label>
-    <select id="account-type" name="account-type" onchange="onAccountTypeChange()">
-        <option value="">请选择文章类型</option>
-        {% for essay_type in essay_type_list %}
-        <option name="{{essay_type}}">{{essay_type}}</option>
-        {% endfor %}
-          <option value="other">自定义</option>
-    </select><br>
-    <div id="other-account-type" style="display: none;">
-        <label for="other-type">自定义:</label>
-        <input type="text" id="other-type" name="other-type">
-    </div>
-    <label for="tt">标题:</label>
-    <input type="text" id="tt" name="tt" required><br>
-    <label for="essay">内容:</label>
+    <label for="essay">评论内容:</label>
     <textarea type="text" id="essay" name="username" required style="width: 380px;height: 280px"></textarea><br>
 
-    <button type="submit" id="add-btn">添加文章</button>
+    <button type="submit" id="add-btn">添加评论</button>
 </form>
 
 <script>
@@ -86,26 +72,11 @@
 
     const form = document.querySelector('form');
     const addBtn = document.querySelector('#add-btn');
-    let essay_type = ""
     addBtn.addEventListener('click', (event) => {
         event.preventDefault();
 
         const essay = document.querySelector('#essay').value;
-        const tt = document.querySelector('#tt').value;
-        if (selectedValue === 'other'){
-            essay_type = document.querySelector('#other-type').value;
-        }else{
-            essay_type = selectedValue;
-        }
 
-        if (essay_type==""){
-            alert("请选择文章类型")
-            return false;
-        }
-        if (tt==""){
-            alert("请输入文章标题")
-            return false;
-        }
         if (essay==""){
             alert("请输入文章")
             return false;
@@ -114,16 +85,14 @@
         // 在这里，你可以将用户名和密码发送到服务器，来创建新的账号。
         // 我们这里只是将其打印到控制台上，以作演示。
 
-        console.log(`文章内容：${essay}, 标题：${tt}，类型：${essay_type}`);
+        console.log(`文章内容：${essay}`);
         const data = {
-            essay: essay,
-            essay_title: tt,
-            essay_type:essay_type,
+            essay: essay
         };
         // const url = '/data';
         const xhr = new XMLHttpRequest();
         // xhr.open('POST', window.location.hostname+"/add_account_message");
-        xhr.open('POST', "add_essay_message");
+        xhr.open('POST', "add_comment_message");
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onload = function() {
             if (xhr.status === 200) {
