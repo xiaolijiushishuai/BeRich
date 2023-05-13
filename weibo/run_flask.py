@@ -2,6 +2,7 @@
 import ast
 import json
 import random
+import re
 import time
 from io import BytesIO
 import gzip
@@ -529,6 +530,7 @@ def delete_essay():
     dbUtil.run_sql(sql)
     return "删除成功"
 
+
 @app.route('/delete_comment_message', methods=['POST'])
 def delete_comment():
     article_title = request.json['article_title']
@@ -538,6 +540,7 @@ def delete_comment():
     print(sql)
     dbUtil.run_sql(sql)
     return "删除成功"
+
 
 @app.route('/add_essay_message', methods=['POST'])
 def add_essay_message():
@@ -846,8 +849,17 @@ def add_task_essay():
     	"""
     article_list = dbUtil.run_sql(sql)
 
+    sql = """
+        SELECT
+            content
+        FROM
+            `weibo`.`manage_comment`
+    	"""
+    common_list = dbUtil.run_sql(sql)
+
     print(account_list)
-    return render_template('add_task_essay.html', account_list=account_list, article_list=article_list)
+    return render_template('add_task_essay.html', account_list=account_list, article_list=article_list,
+                           common_list=common_list)
 
 
 def update_essay_status(article_title):
@@ -901,7 +913,7 @@ def addtaskessay():
     elif mession_type == "common":
         for common in common_list:
             for account in selected_values:
-                sjs = random.randint(0,seconds)
+                sjs = random.randint(0, seconds)
                 execute_time = str(d1 + datetime.timedelta(seconds=sjs))[:-3]
                 new_time = get_new_time()
                 sql = """
@@ -936,88 +948,209 @@ def addtaskessay():
 
 @app.route('/fb_log.html')
 def fb_log():
-    sql = "SELECT account,DATE_FORMAT(excute_time, '%Y-%m-%d %H:%i'), article_title, `status`,task_name from `mession`"
+    sql = "SELECT account,DATE_FORMAT(excute_time, '%Y-%m-%d %H:%i'),`task_name`,`mession_type`,`target_name`,`article_title`, `status`,`common_detail`,`target_text` from `mession`"
     joblist = dbUtil.run_sql(sql)
+    html_jobList=[]
     for job in joblist:
-        print(job)
-    print(joblist)
-    return render_template('fb_log.html', joblist=joblist)
+        jobview=[]
+        jobview.append(job[0])
+        jobview.append(job[1])
+        jobview.append(job[6])
+        jobview.append(job[2])
+        jobview.append(job[3])
+        if job[3]=="essay":
+            jobview.append("发布："+str(job[5]))
+        elif job[3]=="star":
+            jobview.append("点赞："+str(job[4]))
+        elif job[3]=="common":
+            jobview.append("评论："+str(job[4])+" 评论的内容为："+str(job[7])+" 被评论的内容为 ："+str(job[8]))
+        html_jobList.append(jobview)
+
+    return render_template('fb_log.html', joblist=html_jobList)
 
 
 def batch():
     while True:
-        sql = "SELECT id,account, article_title, excute_time,`status`,task_name,DATE_FORMAT(excute_time, '%Y-%m-%d %H:%i') from `mession` where `status`='P'"
+        sql = "SELECT id,account, article_title, excute_time,`status`,task_name,DATE_FORMAT(excute_time, '%Y-%m-%d %H:%i'),`mession_type`,`common_detail` from `mession` where `status`='P'"
         joblist = dbUtil.run_sql(sql)
         print(joblist)
         if joblist:
             for mesion in joblist:
                 jobid = mesion[0]
+                account = mesion[1]
+                essay = mesion[2]
+                mession_type = mesion[7]
+                common_detail = mesion[8]
+                doTxtime = datetime.datetime.strftime(mesion[3], "%Y-%m-%d %H:%M")
+                print("the job excute_time is" + doTxtime)
+                serverTime = get_server_time_tomin()
+                if doTxtime == serverTime:
+                    if mession_type == "essay":
+                        t1 = Thread(target=batchJob(account, essay, jobid))
+                        t1.start()
+                    elif mession_type == "common":
+                        t2 = Thread(target=common_batch(account, common_detail, jobid))
+                        t2.start()
+                    elif mession_type == "star":
+                        t3 = Thread(target=star_batch(account, jobid))
+                        t3.start()
+        time.sleep(30)
 
-                accountList = mesion[1]
-                # accountList = accountList[0:len(accountList) - 1]
-                # accList = accountList.split("}")
-                accList = [accountList]
 
-                essayList = mesion[2]
-                # essayList = essayList[0:len(essayList) - 1]
-                # essList = essayList.split("}")
-                essList = [essayList]
-
-                print("请执行job")
-                batchJob(accList, essList, jobid, mesion[3])
-        time.sleep(random.randint(41, 59))
-
-
-def batchJob(accList, essList, jobid, excuteTime):
+def common_batch(account, common_detail, jobid):
     try:
-        doTxtime = datetime.datetime.strftime(excuteTime, "%Y-%m-%d %H:%M")
-        print(doTxtime)
-        serverTime = get_server_time_tomin()
-        print(serverTime)
-        if doTxtime == serverTime:
-            for ac in accList:
-                sql2 = """
-                         select id from `weibo`.`account` where `account`='{}'
-                     """.format(ac)
-                data = dbUtil.run_sql(sql2)
-                accid = data[0][0]
-                sql2 = """
-                                     select header,cookie from `weibo`.`login_hold` where `account_id`='{}'
-                                 """.format(accid)
-                data2 = dbUtil.run_sql(sql2)
-                header = data2[0][0]
-                cookie = data2[0][1]
-                if data2:
-                    for ess in essList:
-                        sql3 = """
-                                 select content from `weibo`.`article` where `article_title`='{}'
-                             """.format(ess)
-                        data = dbUtil.run_sql(sql3)
-                        content = data[0][0]
-                        try:
-                            code = trancation(header, cookie, content)
-                            print(code)
-                            if code != 200:
-                                sql3 = """
-                                         update `mession` set `status`='{}' where `id`='{}'
-                                     """.format("F", jobid)
-                                data = dbUtil.run_sql(sql3)
-                                break
-                            print("do transacion")
-                        except Exception as e:
+        data2 = getcookieAndheader(account)
+        headers = data2[0]
+        cookies = data2[1]
+        result=getMidTragetNameAndtext(headers,cookies,account)
+        mid = result[0]
+        target_name = result[1]
+        target_text = result[2]
 
-                            print(e)
-                else:
-                    continue
-            # change the job status
-            sql3 = """
-                     update `mession` set `status`='{}' where `id`='{}'
-                 """.format("S", jobid)
-            data = dbUtil.run_sql(sql3)
 
+        comment_date = {
+            "content": common_detail,
+            "mid": mid,
+            "st": "0f2399",
+            "_spr": "screen:1536x864"
+        }
+        ##send common
+        send_coment_url = "https://m.weibo.cn/api/comments/create"
+        req = requests.post(send_coment_url, headers=eval(headers), cookies=eval(cookies), data=comment_date)
+        if req.status_code==200:
+            updateMessionStatusForComAmdStr("S", jobid,target_name,mid,target_text)
+        else:
+            updateMessionStatus("F", jobid)
     except Exception as e:
+        updateMessionStatus("F",jobid)
         print(e)
 
+
+def getMidTragetNameAndtext(header,cookie,account):
+    getuid_url = "https://m.weibo.cn/api/container/getIndex?containerid=102803&openApp=0"
+    req = requests.get(getuid_url, headers=eval(header), cookies=eval(cookie))
+    req_data = req.text.strip()
+    stList = json.loads(req_data)["data"]["cards"]
+    print(type(stList))
+    midList = []
+    middict = {}
+    txtdict = {}
+    for st in stList:
+        mid = st["mblog"]["mid"]
+        midList.append(mid)
+        # break
+        print(mid)
+        user = st["mblog"]["user"]["screen_name"]
+        print(user)
+        middict[mid] = user
+
+        text = st["mblog"]["text"]
+        text2 = st["mblog"]["text"]
+        ree = re.compile(r"<.*>")
+        result = ree.findall(text)
+        if result:
+            for su in result:
+                text = text.replace(su, "")
+
+        ree2 = re.compile(r"#.*?#")
+        spa = ""
+        result2 = ree2.findall(text2)
+        for su in result2:
+            spa += su;
+        txtdict[mid] = text.strip() + spa
+    mid = random.choice(midList)
+    sql2 = """
+                        select id from `weibo`.`mession` where `account`='{}' and `mid`='{}'
+                    """.format(account, mid)
+    data = dbUtil.run_sql(sql2)
+    if data:
+        mid = random.choice(midList)
+    target_name = middict[mid]
+    target_text = txtdict[mid]
+    return [mid,target_name,target_text]
+
+
+
+def star_batch(account, jobid):
+    try:
+        data2 = getcookieAndheader(account)
+        headers = data2[0]
+        cookies = data2[1]
+        result=getMidTragetNameAndtext(headers,cookies,account)
+        mid = result[0]
+        target_name = result[1]
+        target_text = result[2]
+
+        light_star_data = {
+            "id": mid,
+            "attitude": "heart",
+            "st": "0f2399",
+            "_spr": "screen:1536x864"
+        }
+        ##light star
+        light_star_url = "https://m.weibo.cn/api/attitudes/create"
+        req = requests.post(light_star_url, headers=eval(headers), cookies=eval(cookies), data=light_star_data)
+        if req.status_code==200:
+            updateMessionStatusForComAmdStr("S", jobid,target_name,mid,target_text)
+        else:
+            updateMessionStatus("F", jobid)
+    except Exception as e:
+        updateMessionStatus("F", jobid)
+        print(e)
+
+
+def getcookieAndheader(account):
+    sql2 = """
+                     select id from `weibo`.`account` where `account`='{}'
+                 """.format(account)
+    data = dbUtil.run_sql(sql2)
+    accid = data[0][0]
+    sql2 = """
+                                 select header,cookie from `weibo`.`login_hold` where `account_id`='{}'
+                             """.format(accid)
+    data2 = dbUtil.run_sql(sql2)
+    header = data2[0][0]
+    cookie = data2[0][1]
+    return [header, cookie]
+
+
+def batchJob(acc, ess, jobid):
+    try:
+        data2 = getcookieAndheader(acc)
+        header = data2[0]
+        cookie = data2[1]
+        if data2:
+            sql3 = """
+                                 select content from `weibo`.`article` where `article_title`='{}'
+                             """.format(ess)
+            data = dbUtil.run_sql(sql3)
+            content = data[0][0]
+            code = trancation(header, cookie, content)
+            print(code)
+            if code != 200:
+                updateMessionStatus("F", jobid)
+                print("do transacion fail")
+            else:
+                # change the job status
+                updateMessionStatus("S", jobid)
+        else:
+            updateMessionStatus("F", jobid)
+    except Exception as e:
+        updateMessionStatus("F", jobid)
+        print(e)
+
+
+def updateMessionStatus(status,jobId):
+    sql3 = """
+                                                            update `mession` set `status`='{}' where `id`='{}'
+                                                        """.format(status, jobId)
+    data = dbUtil.run_sql(sql3)
+
+def updateMessionStatusForComAmdStr(status,jobId,target_name,mid,text):
+    sql3 = """
+                                                            update `mession` set `status`='{}',`target_name`='{}',`mid`='{}',`target_text`='{}' where `id`='{}'
+                                                        """.format(status,target_name,mid,text, jobId)
+    data = dbUtil.run_sql(sql3)
 
 def trancation(headers, cookies, content):
     try:
@@ -1069,7 +1202,7 @@ def init_loginholdAndaccountStatus():
 
 
 if __name__ == '__main__':
-    init_loginholdAndaccountStatus()
+   # init_loginholdAndaccountStatus()
     t = Thread(target=batch)
     t.start()
     t2 = Thread(target=keepAccountActive)

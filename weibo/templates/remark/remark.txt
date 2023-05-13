@@ -1,3 +1,6 @@
 1.修改了mession 表
 alter table mession add mession_type VARCHAR(20)
 alter table mession add common_detail VARCHAR(5000)
+alter table mession add target_name VARCHAR(200)
+alter table mession add target_text VARCHAR(5000)
+alter table mession MODIFY account VARCHAR(100)

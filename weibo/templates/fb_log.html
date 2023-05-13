@@ -115,24 +115,31 @@
     <tr>
         <th>发布账号</th>
         <th>发布时间</th>
-        <th>发布的文章</th>
-        <th>发布状态</th>
+        <th>任务状态</th>
         <th>任务名称</th>
+        <th>任务类型</th>
+        <th>详情</th>
     </tr>
     </thead>
     <tbody>
     {% for accounts in joblist %}
-    <tr>
-        {% for account in accounts %}
-        {% if account == 'P' %}
-            <td contenteditable="false">待处理</td>
-        {% elif account == 'S' %}
-            <td contenteditable="false">处理成功</td>
-        {% else %}
-            <td contenteditable="false">{{account}}</td>
-        {% endif %}
-        {% endfor %}
-    </tr><br>
+        <tr>
+            {% for account in accounts %}
+                {% if account == 'P' %}
+                    <td contenteditable="false">待处理</td>
+                {% elif account == 'S' %}
+                    <td contenteditable="false">处理成功</td>
+                {% elif account == 'essay' %}
+                    <td contenteditable="false">发布文章</td>
+                {% elif account == 'common' %}
+                    <td contenteditable="false">评论</td>
+                {% elif account == 'star' %}
+                    <td contenteditable="false">点赞</td>
+                {% else %}
+                    <td contenteditable="false">{{ account }}</td>
+                {% endif %}
+            {% endfor %}
+        </tr><br>
     {% endfor %}
     </tbody>
 </table>
@@ -148,8 +155,8 @@
             var i = 0;
             const edit_lsit = []
             cells.forEach(cell => {
-              edit_lsit[i] = cell.textContent;
-              i += 1;
+                edit_lsit[i] = cell.textContent;
+                i += 1;
             });
             console.log(edit_lsit)
         });

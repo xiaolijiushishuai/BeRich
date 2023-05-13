@@ -104,9 +104,11 @@
         <ur style="display: none" id="comment_detail">
             <label for="select">请选择评论：</label>
             <select id="select_comment" multiple>
-                <option value="评论1">评论1</option>
-                <option value="评论2">评论2</option>
-                <option value="评论3">评论3</option>
+                {% for commons in common_list %}
+                    {% for common in commons %}
+                        <option value="{{ common }}">{{ common }}</option>
+                    {% endfor %}
+                {% endfor %}
             </select>
             <br><br>
             <label for="selected">已选择：</label>
