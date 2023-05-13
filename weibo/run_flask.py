@@ -558,6 +558,17 @@ def add_essay_message():
     return "添加文章成功"
 
 
+@app.route('/add_comment_message', methods=['POST'])
+def add_comment_message():
+    essay = request.json['essay']
+    sql = """
+        INSERT INTO `weibo`.`manage_comment`(`content`) VALUES ('{}')
+    """.format(essay)
+    print(sql)
+    dbUtil.run_sql(sql)
+    return "添加评论成功"
+
+
 def select_essay_by_article_title(article_title):
     sql = """
         SELECT id FROM `weibo`.`article` WHERE `article_title` = '{}'
@@ -781,6 +792,9 @@ def add_essay():
     essay_type_list = data or ["大v账号", "普通账号", "小账号"]
     return render_template('add_essay.html', essay_type_list=essay_type_list)
 
+@app.route('/add_comment.html')
+def add_comment():
+    return render_template('add_comment.html')
 
 @app.route('/manage_essay.html')
 def manage_essay():
@@ -821,10 +835,18 @@ def manage_comment():
         WHERE status='unpublished'
     	"""
     account_comment_list = dbUtil.run_sql(sql)
-    print(sql)
-    print(account_comment_list)
+    list_data = []
+    number = 1
+    for i in account_comment_list:
+        list_i = list(i)
+        print(list_i.append(number))
+        list_data.append(list_i)
+        number = number + 1
 
-    return render_template('manage_comment.html', account_essay_list=account_comment_list)
+    print(sql)
+    print(list_data)
+
+    return render_template('manage_comment.html', account_essay_list=list_data)
 
 
 @app.route('/add_task_essay.html')
@@ -950,20 +972,20 @@ def addtaskessay():
 def fb_log():
     sql = "SELECT account,DATE_FORMAT(excute_time, '%Y-%m-%d %H:%i'),`task_name`,`mession_type`,`target_name`,`article_title`, `status`,`common_detail`,`target_text` from `mession`"
     joblist = dbUtil.run_sql(sql)
-    html_jobList=[]
+    html_jobList = []
     for job in joblist:
-        jobview=[]
+        jobview = []
         jobview.append(job[0])
         jobview.append(job[1])
         jobview.append(job[6])
         jobview.append(job[2])
         jobview.append(job[3])
-        if job[3]=="essay":
-            jobview.append("发布："+str(job[5]))
-        elif job[3]=="star":
-            jobview.append("点赞："+str(job[4]))
-        elif job[3]=="common":
-            jobview.append("评论："+str(job[4])+" 评论的内容为："+str(job[7])+" 被评论的内容为 ："+str(job[8]))
+        if job[3] == "essay":
+            jobview.append("发布：" + str(job[5]))
+        elif job[3] == "star":
+            jobview.append("点赞：" + str(job[4]))
+        elif job[3] == "common":
+            jobview.append("评论：" + str(job[4]) + " 评论的内容为：" + str(job[7]) + " 被评论的内容为 ：" + str(job[8]))
         html_jobList.append(jobview)
 
     return render_template('fb_log.html', joblist=html_jobList)
@@ -1002,11 +1024,10 @@ def common_batch(account, common_detail, jobid):
         data2 = getcookieAndheader(account)
         headers = data2[0]
         cookies = data2[1]
-        result=getMidTragetNameAndtext(headers,cookies,account)
+        result = getMidTragetNameAndtext(headers, cookies, account)
         mid = result[0]
         target_name = result[1]
         target_text = result[2]
-
 
         comment_date = {
             "content": common_detail,
@@ -1017,16 +1038,16 @@ def common_batch(account, common_detail, jobid):
         ##send common
         send_coment_url = "https://m.weibo.cn/api/comments/create"
         req = requests.post(send_coment_url, headers=eval(headers), cookies=eval(cookies), data=comment_date)
-        if req.status_code==200:
-            updateMessionStatusForComAmdStr("S", jobid,target_name,mid,target_text)
+        if req.status_code == 200:
+            updateMessionStatusForComAmdStr("S", jobid, target_name, mid, target_text)
         else:
             updateMessionStatus("F", jobid)
     except Exception as e:
-        updateMessionStatus("F",jobid)
+        updateMessionStatus("F", jobid)
         print(e)
 
 
-def getMidTragetNameAndtext(header,cookie,account):
+def getMidTragetNameAndtext(header, cookie, account):
     getuid_url = "https://m.weibo.cn/api/container/getIndex?containerid=102803&openApp=0"
     req = requests.get(getuid_url, headers=eval(header), cookies=eval(cookie))
     req_data = req.text.strip()
@@ -1067,8 +1088,7 @@ def getMidTragetNameAndtext(header,cookie,account):
         mid = random.choice(midList)
     target_name = middict[mid]
     target_text = txtdict[mid]
-    return [mid,target_name,target_text]
-
+    return [mid, target_name, target_text]
 
 
 def star_batch(account, jobid):
@@ -1076,7 +1096,7 @@ def star_batch(account, jobid):
         data2 = getcookieAndheader(account)
         headers = data2[0]
         cookies = data2[1]
-        result=getMidTragetNameAndtext(headers,cookies,account)
+        result = getMidTragetNameAndtext(headers, cookies, account)
         mid = result[0]
         target_name = result[1]
         target_text = result[2]
@@ -1090,8 +1110,8 @@ def star_batch(account, jobid):
         ##light star
         light_star_url = "https://m.weibo.cn/api/attitudes/create"
         req = requests.post(light_star_url, headers=eval(headers), cookies=eval(cookies), data=light_star_data)
-        if req.status_code==200:
-            updateMessionStatusForComAmdStr("S", jobid,target_name,mid,target_text)
+        if req.status_code == 200:
+            updateMessionStatusForComAmdStr("S", jobid, target_name, mid, target_text)
         else:
             updateMessionStatus("F", jobid)
     except Exception as e:
@@ -1140,17 +1160,19 @@ def batchJob(acc, ess, jobid):
         print(e)
 
 
-def updateMessionStatus(status,jobId):
+def updateMessionStatus(status, jobId):
     sql3 = """
                                                             update `mession` set `status`='{}' where `id`='{}'
                                                         """.format(status, jobId)
     data = dbUtil.run_sql(sql3)
 
-def updateMessionStatusForComAmdStr(status,jobId,target_name,mid,text):
+
+def updateMessionStatusForComAmdStr(status, jobId, target_name, mid, text):
     sql3 = """
                                                             update `mession` set `status`='{}',`target_name`='{}',`mid`='{}',`target_text`='{}' where `id`='{}'
-                                                        """.format(status,target_name,mid,text, jobId)
+                                                        """.format(status, target_name, mid, text, jobId)
     data = dbUtil.run_sql(sql3)
+
 
 def trancation(headers, cookies, content):
     try:
@@ -1202,7 +1224,7 @@ def init_loginholdAndaccountStatus():
 
 
 if __name__ == '__main__':
-   # init_loginholdAndaccountStatus()
+    # init_loginholdAndaccountStatus()
     t = Thread(target=batch)
     t.start()
     t2 = Thread(target=keepAccountActive)
